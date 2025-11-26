@@ -2,6 +2,8 @@
 
 ## Overview
 
+A concolic method that systematically explores different CPR-triggered transformation paths, each of which preserves consistency.
+
 This project integrates **Galette** (dynamic taint tracking for JVM), **Knarr** (symbolic execution engine), **GreenSolver** (constraint solver), and **Vitruvius** (model transformation framework) to enable automatic path exploration in model-driven engineering workflows.
 
 This framework provides **concolic execution** (combined concrete + symbolic execution) for model transformations. It automatically:

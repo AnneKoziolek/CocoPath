@@ -883,6 +883,7 @@ class TagPropagator extends MethodVisitor {
      * 2. Create fresh intermediate labels for each case
      * 3. Execute switch with fresh labels
      * 4. At each fresh label: record constraint, then jump to original label
+     * 5. AUTOMATICALLY add domain constraint based on switch min/max values
      */
     private void recordSwitchConstraint(int min, int max, Label dflt, Label[] labels, boolean isTableSwitch) {
         // Generate fresh intermediate labels
@@ -894,6 +895,16 @@ class TagPropagator extends MethodVisitor {
 
         // Stack at this point: ..., index
         // Shadow stack: ..., tag
+
+        // === AUTOMATIC DOMAIN CONSTRAINT EXTRACTION ===
+        // Add domain constraint based on switch statement structure
+        // Domain is [min, max+1) which covers all case values
+        shadowLocals.peek(0); // Get the tag from shadow stack
+        AsmUtil.pushInt(mv, min); // Push min value
+        AsmUtil.pushInt(mv, max + 1); // Push max+1 value (exclusive upper bound)
+        super.visitMethodInsn(
+                INVOKESTATIC, PATH_UTILS_INTERNAL_NAME, "addIntDomainConstraintAuto", "(" + TAG_DESC + "II)V", false);
+        // This automatically adds the constraint: min <= var < max+1
 
         // Duplicate the switch index value for constraint recording
         super.visitInsn(DUP);
@@ -946,6 +957,7 @@ class TagPropagator extends MethodVisitor {
      * Record switch constraint for lookup switch instructions.
      *
      * Similar to recordSwitchConstraint but uses the actual key values from the keys array.
+     * AUTOMATICALLY extracts domain constraint from the min/max key values.
      */
     private void recordLookupSwitchConstraint(int[] keys, Label dflt, Label[] labels) {
         // Generate fresh intermediate labels
@@ -957,6 +969,23 @@ class TagPropagator extends MethodVisitor {
 
         // Stack at this point: ..., key
         // Shadow stack: ..., tag
+
+        // === AUTOMATIC DOMAIN CONSTRAINT EXTRACTION ===
+        // Find min and max key values
+        int minKey = keys[0];
+        int maxKey = keys[0];
+        for (int key : keys) {
+            if (key < minKey) minKey = key;
+            if (key > maxKey) maxKey = key;
+        }
+
+        // Add domain constraint based on lookup switch key range
+        shadowLocals.peek(0); // Get the tag from shadow stack
+        AsmUtil.pushInt(mv, minKey); // Push min key value
+        AsmUtil.pushInt(mv, maxKey + 1); // Push maxKey+1 value (exclusive upper bound)
+        super.visitMethodInsn(
+                INVOKESTATIC, PATH_UTILS_INTERNAL_NAME, "addIntDomainConstraintAuto", "(" + TAG_DESC + "II)V", false);
+        // This automatically adds the constraint: minKey <= var < maxKey+1
 
         // Duplicate the switch key value for constraint recording
         super.visitInsn(DUP);

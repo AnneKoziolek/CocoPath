@@ -104,7 +104,8 @@
       "Bash(lsof:*)",
       "Bash(fuser:*)",
       "Bash(timeout 90 bash:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(timeout 90 mvn clean compile:*)"
     ],
     "deny": []
   }

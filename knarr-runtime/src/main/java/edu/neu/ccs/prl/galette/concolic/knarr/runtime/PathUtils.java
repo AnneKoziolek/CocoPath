@@ -12,7 +12,6 @@ import za.ac.sun.cs.green.expr.Operation.Operator;
  * This class replaces the original Phosphor-based PathUtils with
  * Galette-compatible APIs for managing symbolic execution constraints.
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class PathUtils {
 
@@ -309,6 +308,113 @@ public class PathUtils {
             }
         } catch (Exception e) {
             System.err.println("[PathUtils] Failed to add switch constraint: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Automatically record a branch constraint when a conditional jump is taken/not taken.
+     * This method is called by bytecode instrumentation at branch points.
+     *
+     * @param tag The symbolic tag associated with the branch condition value
+     * @param opcode The bytecode opcode of the branch instruction (IFEQ, IFNE, IFLT, etc.)
+     * @param branchTaken True if the branch was taken, false otherwise
+     */
+    public static void recordBranchConstraint(Tag tag, int opcode, boolean branchTaken) {
+        if (tag == null) {
+            return; // No symbolic tag, skip constraint collection
+        }
+
+        try {
+            Expression expr = GaletteGreenBridge.tagToGreenExpression(tag, 0);
+            if (expr == null) {
+                return;
+            }
+
+            // Convert opcode to Green operator
+            Operator op = getOperatorForBranchOpcode(opcode, branchTaken);
+            if (op == null) {
+                return;
+            }
+
+            // Create constraint: expr op 0
+            IntConstant zero = new IntConstant(0);
+            Expression constraint = new BinaryOperation(op, expr, zero);
+
+            getCurPC().addConstraint(constraint);
+
+            if (GaletteSymbolicator.DEBUG) {
+                System.out.println("[PathUtils] Recorded branch constraint: " + constraint + " (opcode=" + opcode
+                        + ", taken=" + branchTaken + ")");
+            }
+        } catch (Exception e) {
+            System.err.println("[PathUtils] Failed to record branch constraint: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Automatically record a switch constraint when a switch case is selected.
+     * This method is called by bytecode instrumentation at switch statements.
+     *
+     * @param tag The symbolic tag associated with the switch index
+     * @param selectedCase The case value that was selected (-1 for default)
+     */
+    public static void recordSwitchConstraintAuto(Tag tag, int selectedCase) {
+        if (tag == null) {
+            return; // No symbolic tag, skip constraint collection
+        }
+
+        try {
+            Expression expr = GaletteGreenBridge.tagToGreenExpression(tag, 0);
+            if (expr == null) {
+                return;
+            }
+
+            if (selectedCase == -1) {
+                // Default case - need to record that index != all other cases
+                // For now, just skip (requires knowledge of all case values)
+                return;
+            }
+
+            // Create constraint: expr == selectedCase
+            IntConstant caseConst = new IntConstant(selectedCase);
+            Expression constraint = new BinaryOperation(Operator.EQ, expr, caseConst);
+
+            getCurPC().addConstraint(constraint);
+
+            if (GaletteSymbolicator.DEBUG) {
+                System.out.println("[PathUtils] Recorded switch constraint: " + constraint);
+            }
+        } catch (Exception e) {
+            System.err.println("[PathUtils] Failed to record switch constraint: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Convert a branch opcode to a Green operator, accounting for whether branch was taken.
+     *
+     * @param opcode Branch bytecode opcode (IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE)
+     * @param branchTaken Whether the branch was taken
+     * @return Corresponding Green operator, or null if not supported
+     */
+    private static Operator getOperatorForBranchOpcode(int opcode, boolean branchTaken) {
+        // When branch is taken, use the opcode's operator
+        // When branch is NOT taken, use the negated operator
+
+        switch (opcode) {
+            case 153: // IFEQ
+                return branchTaken ? Operator.EQ : Operator.NE;
+            case 154: // IFNE
+                return branchTaken ? Operator.NE : Operator.EQ;
+            case 155: // IFLT
+                return branchTaken ? Operator.LT : Operator.GE;
+            case 156: // IFGE
+                return branchTaken ? Operator.GE : Operator.LT;
+            case 157: // IFGT
+                return branchTaken ? Operator.GT : Operator.LE;
+            case 158: // IFLE
+                return branchTaken ? Operator.LE : Operator.GT;
+            default:
+                return null;
         }
     }
 }

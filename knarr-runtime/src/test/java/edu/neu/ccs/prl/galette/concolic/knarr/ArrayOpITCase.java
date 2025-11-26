@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
  * array operations, symbolic array indices, and array manipulation
  * functionality using Galette's concolic execution infrastructure.
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class ArrayOpITCase {
 

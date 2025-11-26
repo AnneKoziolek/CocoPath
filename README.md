@@ -12,6 +12,8 @@ This framework provides **concolic execution** (combined concrete + symbolic exe
 4. **Generates new inputs** by negating constraints
 5. **Explores all paths** automatically until complete
 
+![CocoPath Overview Diagram](overview.png)
+
 ### Key Components
 
 #### Galette
@@ -39,8 +41,8 @@ This framework provides **concolic execution** (combined concrete + symbolic exe
 #### Vitruvius Framework
 - **Purpose**: Consistency preservation for model transformations
 - **Role**: Provides real-world model transformation scenarios
-- **Example**: Amathea ↔ ASCET model synchronization
-- **Location**: `amathea-acset-integration/`
+- **Example**: Amalthea ↔ ASCET model synchronization
+- **Location**: `amalthea-acset-integration/`
 
 ## Project Structure
 
@@ -54,13 +56,12 @@ knarr-runtime/
 │       │   ├── PathExplorer.java             # Automatic path exploration
 │       │   └── ConstraintSolver.java         # Constraint negation & solving
 │       └── vitruvius/
-│           ├── VitruvSymbolicExecutionExample.java      # Manual exploration
-│           └── AutomaticVitruvPathExploration.java      # Automatic exploration
+│           └── AutomaticVitruvPathExploration.java      # Automatic path exploration
 ├── src/test/java/                            # Unit tests
 ├── run-symbolic-execution.sh/.bat/.ps1       # Execution scripts
 └── README.md                                 # This file
 
-amathea-acset-integration/                    # Vitruvius example
+amalthea-acset-integration/                    # Vitruvius example
 ├── vsum/src/main/java/.../Test.java          # Model transformation entry point
 └── consistency/src/main/reactions/           # Transformation reactions
 ```
@@ -71,7 +72,6 @@ amathea-acset-integration/                    # Vitruvius example
 
 1. **Java 17** 
 2. **Maven 3.6+**
-3. **Python 3.x** (optional, for visualizations)
 
 ### Quick Start
 
@@ -105,7 +105,7 @@ run-symbolic-execution.bat
 
 #### External Mode
 - **Output**: Full Vitruvius reactions & transformations
-- **Requirements**: External Amathea-acset repository
+- **Requirements**: External Amalthea-acset repository: https://github.com/IngridJiang/Amalthea-acset
 - **Use case**: Real-world model transformation scenarios
 
 ### Output Files
@@ -115,10 +115,20 @@ After execution, you'll find:
 ```
 knarr-runtime/
 ├── execution_paths_automatic.json    # Path exploration results (JSON)
-├── execution_summary.txt             # Human-readable summary
-├── execution_tree.png                # Execution tree visualization
-├── performance_chart.png             # Performance analysis
 └── galette-output-automatic-*/       # Generated models per path
+```
+
+## Testing
+
+```bash
+# Run all tests
+mvn test
+
+# Run specific test
+mvn test -Dtest=ConstraintSolverTest
+
+# Run with debug output
+mvn test -Dpath.explorer.debug=true -Dconstraint.solver.debug=true
 ```
 
 ## Debug Flags
@@ -134,16 +144,31 @@ Set these system properties for verbose output:
 
 ## Example: Vitruvius Model Transformation
 
-The `AutomaticVitruvPathExploration` demonstrates automatic exploration of a real-world model transformation:
+The `AutomaticVitruvPathExploration` demonstrates automatic exploration of a **consistency-preserving model transformation** between two models:
 
-**Scenario**: User selects task type (0-4) → System generates corresponding ASCET model element
+- **Source model (Amalthea)**: captures tasks and their execution behavior in an automotive ECU timing model.
+- **Target model (ASCET)**: represents the corresponding software architecture and implementation-oriented entities (e.g., ASCET tasks).
 
-**Explored Paths**:
-- Path 0: InterruptTask
-- Path 1: PeriodicTask
-- Path 2: SoftwareTask
-- Path 3: TimeTableTask
-- Path 4: Decide later (no action)
+Vitruvius ensures **consistency preservation** between these two models by using *CPRs / *reactions*:  
+whenever the Amalthea model is changed (e.g., a new task is created or its type is modified), the corresponding ASCET elements are created or updated so that both views remain consistent.
+
+CocoPath augments this with **concolic path exploration**:
+
+- User decisions (e.g., which task type to create) are treated as **symbolic inputs**.
+- For each decision path, CocoPath triggers the Vitruvius reactions and records:
+  - the resulting consistent pair *(Amalthea model, ASCET model)*,
+  - the **path constraint** describing the corresponding user decisions, and
+  - the **solver-generated concrete input** that realizes this path.
+
+This allows engineers to **systematically explore alternative consistency-preserving evolution paths** of the V-SUM.
+
+For each path, CocoPath stores:
+
+- the **resulting Amalthea model** (with the chosen task configuration),
+- the **synchronized ASCET model** produced by Vitruvius,
+- the **path condition** 
+- and execution time
+
 
 ## License
 
@@ -154,4 +179,4 @@ See [LICENSE](../LICENSE) in the project root for Galette.
 - **Galette**: PRL Lab at Northeastern University
 - **GreenSolver**: STAR Lab at University of Stellenbosch
 - **Vitruvius**: KIT (Karlsruhe Institute of Technology)
-- **Amathea-ASCET**: Automotive model transformation Example from Bosch
+- **Amalthea-ASCET**: Automotive model transformation Example from Bosch

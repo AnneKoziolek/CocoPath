@@ -20,7 +20,6 @@ import za.ac.sun.cs.green.expr.Operation.Operator;
  * @feature Notified when symbolic values are created
  * @feature Tracks constraint collection
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class GaletteTaintListener implements ConcolicTaintListener {
 

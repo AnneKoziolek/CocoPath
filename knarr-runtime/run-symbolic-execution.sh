@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo "================================================================================"
-echo "GALETTE/KNARR SYMBOLIC EXECUTION WITH VITRUVIUS FRAMEWORK"
+echo "CocoPath"
 echo "================================================================================"
 echo ""
 
@@ -57,14 +57,12 @@ if [ "$INTERACTIVE_MODE" = true ]; then
     echo "Please select execution mode:"
     echo ""
     echo "  1) INTERNAL MODE (Fast, simplified stub)"
-    echo "     - Execution time: ~2-5ms per path"
     echo "     - Output: Basic XMI stubs"
     echo "     - No external repository needed"
     echo ""
     echo "  2) EXTERNAL MODE (Full Vitruvius transformations)"
-    echo "     - Execution time: ~26-45ms per path"
     echo "     - Output: Complete Vitruvius reactions & transformations"
-    echo "     - Requires external Amathea-acset repository"
+    echo "     - Requires external Amalthea-acset repository"
     echo ""
     read -p "Enter your choice (1 or 2): " choice
     echo ""
@@ -94,17 +92,17 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 if [ "$USE_EXTERNAL" = true ]; then
-    echo "Mode: EXTERNAL (switching to external Amathea-acset)"
+    echo "Mode: EXTERNAL (switching to external Amalthea-acset)"
     echo ""
 
     # Verify external path exists
     if [ ! -d "$EXTERNAL_PATH" ]; then
-        echo "ERROR: External Amathea-acset not found at: $EXTERNAL_PATH"
+        echo "ERROR: External Amalthea-acset not found at: $EXTERNAL_PATH"
         echo "Please check the path"
         exit 1
     fi
 
-    echo "[1/4] Building external Amathea-acset at $EXTERNAL_PATH..."
+    echo "[1/4] Building external Amalthea-acset at $EXTERNAL_PATH..."
     (cd "$EXTERNAL_PATH" && mvn clean install -DskipTests -Dcheckstyle.skip=true)
     echo "      Done."
     echo ""
@@ -134,26 +132,26 @@ if [ "$USE_EXTERNAL" = true ]; then
 
     STEP_OFFSET=2
 else
-    echo "Mode: INTERNAL (using amathea-acset-integration module)"
-    echo "      Note: Requires external Amathea-acset built once for Vitruvius dependencies"
+    echo "Mode: INTERNAL (using amalthea-acset-integration module)"
+    echo "      Note: Requires external Amalthea-acset built once for Vitruvius dependencies"
     echo ""
 
     # Check if Vitruvius dependencies are available
     if [ ! -d "$HOME/.m2/repository/tools/vitruv/tools.vitruv.methodologisttemplate.vsum" ]; then
         echo "WARNING: Vitruvius VSUM dependency not found in Maven repository"
-        echo "         Building external Amathea-acset to install it..."
+        echo "         Building external Amalthea-acset to install it..."
         echo ""
 
         if [ -d "$EXTERNAL_PATH" ]; then
             (cd "$EXTERNAL_PATH" && mvn clean install -DskipTests -Dcheckstyle.skip=true)
             if [ $? -ne 0 ]; then
-                echo "ERROR: Failed to build external Amathea-acset"
+                echo "ERROR: Failed to build external Amalthea-acset"
                 exit 1
             fi
             echo "      Done. Vitruvius dependencies installed."
             echo ""
         else
-            echo "ERROR: External Amathea-acset not found at: $EXTERNAL_PATH"
+            echo "ERROR: External Amalthea-acset not found at: $EXTERNAL_PATH"
             echo "       Please build it first or specify path with --external-path"
             exit 1
         fi
@@ -182,8 +180,8 @@ else
     echo "      Switched to internal dependency."
     echo ""
 
-    echo "[2/4] Building internal amathea-acset-integration..."
-    (cd "$(dirname "$SCRIPT_DIR")/amathea-acset-integration" && mvn clean install -DskipTests -Dcheckstyle.skip=true)
+    echo "[2/4] Building internal amalthea-acset-integration..."
+    (cd "$(dirname "$SCRIPT_DIR")/amalthea-acset-integration" && mvn clean install -DskipTests -Dcheckstyle.skip=true)
     echo "      Done."
     echo ""
 
@@ -200,6 +198,12 @@ echo "      Done."
 echo ""
 
 echo "[$STEP2/$TOTAL_STEPS] Running symbolic execution..."
+echo "      With automatic constraint collection enabled"
+
+# Note: Javaagent is not compatible with mvn exec:java
+# We use manual constraint collection via PathUtils.addIntDomainConstraint() and addSwitchConstraint()
+# If you need dynamic instrumentation, run the JAR directly instead of using exec:java
+
 set +e
 mvn exec:java -Dcheckstyle.skip=true
 MVN_EXIT=$?
@@ -218,38 +222,7 @@ if [ -f "pom.xml.bak" ]; then
     echo "      Done."
 fi
 
-echo ""
-echo "[OPTIONAL] Generating visualizations..."
-
-if [ -f "execution_paths.json" ]; then
-    PYTHON_CMD=""
-    if command -v python.exe &> /dev/null && python.exe --version &> /dev/null; then
-        PYTHON_CMD="python.exe"
-    elif command -v python &> /dev/null && python --version &> /dev/null; then
-        PYTHON_CMD="python"
-    elif command -v python3 &> /dev/null && python3 --version &> /dev/null; then
-        PYTHON_CMD="python3"
-    fi
-
-    if [ -n "$PYTHON_CMD" ]; then
-        echo "  Running visualize_results.py..."
-        if $PYTHON_CMD visualize_results.py; then
-            echo "  ✓ Results visualizations generated"
-        else
-            echo "  ✗ Failed to generate results visualizations (see errors above)"
-        fi
-
-        echo "  Running visualize_workflow.py..."
-        if $PYTHON_CMD visualize_workflow.py; then
-            echo "  ✓ Workflow diagram generated"
-        else
-            echo "  ✗ Failed to generate workflow diagram (see errors above)"
-        fi
-    else
-        echo "  ✗ Python not found - skipping visualizations"
-    fi
-else
-    echo "  ✗ No execution_paths.json found - skipping visualizations"
+if [ ! -f "execution_paths_automatic.json" ]; then
     if [ $MVN_EXIT -ne 0 ]; then
         echo ""
         echo "ERROR: Symbolic execution failed!"
@@ -259,14 +232,10 @@ fi
 
 echo ""
 echo "================================================================================"
-echo "SUCCESS! Symbolic execution completed."
+echo "Completed."
 echo "================================================================================"
 echo ""
 echo "Generated files:"
-echo "  - execution_paths.json       (JSON data)"
-echo "  - execution_summary.txt      (Text summary)"
-echo "  - execution_tree.png         (Execution tree diagram)"
-echo "  - performance_chart.png      (Performance charts)"
-echo "  - workflow_diagram.png       (Workflow diagram)"
-echo "  - galette-output-0/ to galette-output-4/ (Model outputs)"
+echo "  - execution_paths_automatic.json      (Path exploration results)"
+echo "  - galette-output-automatic-*/ (Model outputs per path)"
 echo ""

@@ -17,7 +17,6 @@ import za.ac.sun.cs.green.expr.RealVariable;
  * This test validates the milestone "Basic Tag operations work correctly"
  * by testing tag creation, conversion, storage, and retrieval operations.
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class TagOperationsTest {
 

@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
  * string operations, character manipulation, and string-based symbolic execution
  * functionality using Galette's concolic execution infrastructure.
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class StringOpITCase {
 

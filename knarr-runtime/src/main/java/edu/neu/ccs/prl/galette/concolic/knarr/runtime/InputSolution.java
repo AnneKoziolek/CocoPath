@@ -11,7 +11,6 @@ import java.util.Set;
  * This class represents a solution from the constraint solver,
  * mapping symbolic variable labels to their concrete values.
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class InputSolution implements Serializable {
     private static final long serialVersionUID = 1L;

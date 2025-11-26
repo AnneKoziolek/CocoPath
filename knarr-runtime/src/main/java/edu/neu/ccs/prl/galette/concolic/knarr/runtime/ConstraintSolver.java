@@ -89,11 +89,28 @@ public class ConstraintSolver {
             return null;
         }
 
+        // Try to find a value that satisfies ALL constraints
+        // Group constraints by variable
+        Map<String, List<SimpleConstraint>> constraintsByVar = new HashMap<>();
         for (SimpleConstraint sc : simpleConstraints) {
-            Object value = solveSimpleConstraint(sc);
-            if (value != null) {
-                solution.setValue(sc.variableName, value);
+            constraintsByVar
+                    .computeIfAbsent(sc.variableName, k -> new ArrayList<>())
+                    .add(sc);
+        }
+
+        // Solve for each variable
+        for (Map.Entry<String, List<SimpleConstraint>> entry : constraintsByVar.entrySet()) {
+            String varName = entry.getKey();
+            List<SimpleConstraint> constraints = entry.getValue();
+
+            Object value = solveConstraintsForVariable(constraints);
+            if (value == null) {
+                // UNSAT - no value satisfies all constraints for this variable
+                if (DEBUG) System.out.println("[ConstraintSolver] UNSAT for variable: " + varName);
+                return null;
             }
+
+            solution.setValue(varName, value);
         }
 
         if (solution.isEmpty()) {
@@ -102,6 +119,82 @@ public class ConstraintSolver {
 
         solution.setSatisfiable(true);
         return solution;
+    }
+
+    private static Object solveConstraintsForVariable(List<SimpleConstraint> constraints) {
+        if (constraints.isEmpty()) {
+            return null;
+        }
+
+        // Extract bounds and requirements
+        Integer minValue = null;
+        Integer maxValue = null;
+        Set<Integer> excludedValues = new HashSet<>();
+        Integer requiredValue = null;
+
+        for (SimpleConstraint sc : constraints) {
+            if (!(sc.constantValue instanceof Integer)) {
+                continue; // Skip non-integer constraints for now
+            }
+
+            int threshold = (Integer) sc.constantValue;
+
+            switch (sc.operator) {
+                case EQ:
+                    if (requiredValue != null && requiredValue != threshold) {
+                        return null; // Conflicting equality constraints
+                    }
+                    requiredValue = threshold;
+                    break;
+                case NE:
+                    excludedValues.add(threshold);
+                    break;
+                case GT:
+                    minValue = (minValue == null) ? threshold + 1 : Math.max(minValue, threshold + 1);
+                    break;
+                case GE:
+                    minValue = (minValue == null) ? threshold : Math.max(minValue, threshold);
+                    break;
+                case LT:
+                    maxValue = (maxValue == null) ? threshold - 1 : Math.min(maxValue, threshold - 1);
+                    break;
+                case LE:
+                    maxValue = (maxValue == null) ? threshold : Math.min(maxValue, threshold);
+                    break;
+            }
+        }
+
+        // If there's a required value, check if it satisfies all constraints
+        if (requiredValue != null) {
+            if (excludedValues.contains(requiredValue)) {
+                return null; // Required value is excluded
+            }
+            if (minValue != null && requiredValue < minValue) {
+                return null; // Required value below minimum
+            }
+            if (maxValue != null && requiredValue > maxValue) {
+                return null; // Required value above maximum
+            }
+            return requiredValue;
+        }
+
+        // Find any value in the valid range that's not excluded
+        if (minValue == null) minValue = Integer.MIN_VALUE;
+        if (maxValue == null) maxValue = Integer.MAX_VALUE;
+
+        if (minValue > maxValue) {
+            return null; // Empty range
+        }
+
+        // Search for a valid value in the range
+        for (int candidate = minValue; candidate <= maxValue && candidate < minValue + 1000; candidate++) {
+            if (!excludedValues.contains(candidate)) {
+                return candidate;
+            }
+        }
+
+        // No valid value found
+        return null;
     }
 
     private static class SimpleConstraint {

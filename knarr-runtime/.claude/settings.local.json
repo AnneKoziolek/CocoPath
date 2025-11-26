@@ -8,7 +8,7 @@
       "Bash(powershell:*)",
       "Bash(run.cmd)",
       "Bash(dir:*)",
-      "Read(//c/Users/10239/galette-vitruv/amathea-acset-integration/consistency/src/main/reactions/**)",
+      "Read(//c/Users/10239/galette-vitruv/amalthea-acset-integration/consistency/src/main/reactions/**)",
       "Read(//c/Users/10239/galette-vitruv/**)",
       "Read(//c/Users/10239/**)"
     ],

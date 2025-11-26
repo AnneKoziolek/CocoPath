@@ -2,11 +2,11 @@ package edu.neu.ccs.prl.galette.concolic.knarr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.neu.ccs.prl.galette.Tag;
-import edu.neu.ccs.prl.galette.Tainter;
 import edu.neu.ccs.prl.galette.concolic.knarr.runtime.GaletteSymbolicator;
 import edu.neu.ccs.prl.galette.concolic.knarr.runtime.PathConditionWrapper;
 import edu.neu.ccs.prl.galette.concolic.knarr.runtime.PathUtils;
+import edu.neu.ccs.prl.galette.internal.runtime.Tag;
+import edu.neu.ccs.prl.galette.internal.runtime.Tainter;
 import org.junit.jupiter.api.Test;
 import za.ac.sun.cs.green.expr.Expression;
 

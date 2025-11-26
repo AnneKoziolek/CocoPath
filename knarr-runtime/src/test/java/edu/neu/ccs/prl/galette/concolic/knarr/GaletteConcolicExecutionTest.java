@@ -17,7 +17,6 @@ import za.ac.sun.cs.green.expr.Expression;
  * These tests demonstrate end-to-end concolic execution functionality
  * including symbolic value creation, constraint generation, and path exploration.
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class GaletteConcolicExecutionTest {
 

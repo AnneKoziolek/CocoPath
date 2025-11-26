@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
  * basic arithmetic operations, conditional jumps, and symbolic execution
  * functionality using Galette's concolic execution infrastructure.
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class StackOpITCase {
 

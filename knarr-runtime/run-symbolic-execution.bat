@@ -32,7 +32,7 @@ if /i "%~1"=="external" (
 )
 
 echo ================================================================================
-echo GALETTE/KNARR SYMBOLIC EXECUTION WITH VITRUVIUS FRAMEWORK
+echo CocoPath
 echo ================================================================================
 echo.
 
@@ -41,14 +41,12 @@ if "%INTERACTIVE_MODE%"=="true" (
     echo Please select execution mode:
     echo.
     echo   1^) INTERNAL MODE ^(Fast, simplified stub^)
-    echo      - Execution time: ~2-5ms per path
     echo      - Output: Basic XMI stubs
     echo      - No external repository needed
     echo.
     echo   2^) EXTERNAL MODE ^(Full Vitruvius transformations^)
-    echo      - Execution time: ~26-45ms per path
     echo      - Output: Complete Vitruvius reactions ^& transformations
-    echo      - Requires external Amathea-acset repository
+    echo      - Requires external Amalthea-acset repository
     echo.
     set /p choice="Enter your choice (1 or 2): "
     echo.
@@ -70,21 +68,21 @@ echo ===========================================================================
 echo.
 
 if "%USE_EXTERNAL%"=="true" (
-    echo Mode: EXTERNAL ^(switching to external Amathea-acset^)
+    echo Mode: EXTERNAL ^(switching to external Amalthea-acset^)
     echo.
 
     REM Verify external path exists
     if not exist "%EXTERNAL_PATH%" (
-        echo ERROR: External Amathea-acset not found at: %EXTERNAL_PATH%
+        echo ERROR: External Amalthea-acset not found at: %EXTERNAL_PATH%
         echo Please check the path
         exit /b 1
     )
 
-    echo [1/4] Building external Amathea-acset at %EXTERNAL_PATH%...
+    echo [1/4] Building external Amalthea-acset at %EXTERNAL_PATH%...
     pushd "%EXTERNAL_PATH%"
     call mvn clean install -DskipTests -Dcheckstyle.skip=true
     if errorlevel 1 (
-        echo ERROR: Failed to build external Amathea-acset
+        echo ERROR: Failed to build external Amalthea-acset
         popd
         exit /b 1
     )
@@ -97,7 +95,7 @@ if "%USE_EXTERNAL%"=="true" (
     copy /y pom.xml pom.xml.bak >nul
 
     REM Comment out internal dependency and uncomment external
-    powershell -Command "(gc pom.xml) -replace '(<dependency>\s*<groupId>edu\.neu\.ccs\.prl\.galette</groupId>\s*<artifactId>amathea-acset-vsum</artifactId>.*?</dependency>)', '<!-- $1 -->' | Out-File -encoding ASCII pom.xml"
+    powershell -Command "(gc pom.xml) -replace '(<dependency>\s*<groupId>edu\.neu\.ccs\.prl\.galette</groupId>\s*<artifactId>amalthea-acset-vsum</artifactId>.*?</dependency>)', '<!-- $1 -->' | Out-File -encoding ASCII pom.xml"
     powershell -Command "(gc pom.xml) -replace '<!--\s*(<dependency>\s*<groupId>tools\.vitruv</groupId>\s*<artifactId>tools\.vitruv\.methodologisttemplate\.vsum</artifactId>.*?</dependency>)\s*-->', '$1' | Out-File -encoding ASCII pom.xml"
 
     echo       Switched to external dependency.
@@ -105,21 +103,21 @@ if "%USE_EXTERNAL%"=="true" (
 
     set "STEP_OFFSET=2"
 ) else (
-    echo Mode: INTERNAL ^(using amathea-acset-integration module^)
-    echo       Note: Requires external Amathea-acset built once for Vitruvius dependencies
+    echo Mode: INTERNAL ^(using amalthea-acset-integration module^)
+    echo       Note: Requires external Amalthea-acset built once for Vitruvius dependencies
     echo.
 
     REM Check if Vitruvius dependencies are available
     if not exist "%USERPROFILE%\.m2\repository\tools\vitruv\tools.vitruv.methodologisttemplate.vsum" (
         echo WARNING: Vitruvius VSUM dependency not found in Maven repository
-        echo          Building external Amathea-acset to install it...
+        echo          Building external Amalthea-acset to install it...
         echo.
 
         if exist "%EXTERNAL_PATH%" (
             pushd "%EXTERNAL_PATH%"
             call mvn clean install -DskipTests -Dcheckstyle.skip=true
             if errorlevel 1 (
-                echo ERROR: Failed to build external Amathea-acset
+                echo ERROR: Failed to build external Amalthea-acset
                 popd
                 exit /b 1
             )
@@ -127,17 +125,17 @@ if "%USE_EXTERNAL%"=="true" (
             echo       Done. Vitruvius dependencies installed.
             echo.
         ) else (
-            echo ERROR: External Amathea-acset not found at: %EXTERNAL_PATH%
+            echo ERROR: External Amalthea-acset not found at: %EXTERNAL_PATH%
             echo        Please build it first or specify path
             exit /b 1
         )
     )
 
-    echo [1/3] Building internal amathea-acset-integration...
-    pushd "..\amathea-acset-integration"
+    echo [1/3] Building internal amalthea-acset-integration...
+    pushd "..\amalthea-acset-integration"
     call mvn clean install -DskipTests -Dcheckstyle.skip=true
     if errorlevel 1 (
-        echo ERROR: Failed to build internal amathea-acset-integration
+        echo ERROR: Failed to build internal amalthea-acset-integration
         popd
         exit /b 1
     )
@@ -159,6 +157,11 @@ echo       Done.
 echo.
 
 echo [%STEP2%/%TOTAL_STEPS%] Running symbolic execution...
+echo       With automatic constraint collection enabled
+
+REM Note: Javaagent is not compatible with mvn exec:java
+REM We use manual constraint collection via PathUtils.addIntDomainConstraint() and addSwitchConstraint()
+
 call mvn exec:java -Dcheckstyle.skip=true
 set "MVN_SUCCESS=%ERRORLEVEL%"
 
@@ -178,33 +181,7 @@ if "%USE_EXTERNAL%"=="true" (
     echo       Done.
 )
 
-echo.
-echo [OPTIONAL] Generating visualizations...
-
-REM Try to run visualization if Python is available and execution_paths.json exists
-if exist execution_paths.json (
-    where python >nul 2>&1
-    if %ERRORLEVEL% == 0 (
-        echo   Running visualize_results.py...
-        python visualize_results.py >nul 2>&1
-        if %ERRORLEVEL% == 0 (
-            echo   + Results visualizations generated
-        ) else (
-            echo   x Failed to generate results visualizations ^(see errors above^)
-        )
-
-        echo   Running visualize_workflow.py...
-        python visualize_workflow.py >nul 2>&1
-        if %ERRORLEVEL% == 0 (
-            echo   + Workflow diagram generated
-        ) else (
-            echo   x Failed to generate workflow diagram ^(see errors above^)
-        )
-    ) else (
-        echo   x Python not found - skipping visualizations
-    )
-) else (
-    echo   x No execution_paths.json found - skipping visualizations
+if not exist execution_paths_automatic.json (
     if not "%MVN_SUCCESS%"=="0" (
         echo.
         echo ERROR: Symbolic execution failed!
@@ -214,14 +191,10 @@ if exist execution_paths.json (
 
 echo.
 echo ================================================================================
-echo SUCCESS! Symbolic execution completed.
+echo Completed.
 echo ================================================================================
 echo.
 echo Generated files:
-echo   - execution_paths.json       (JSON data)
-echo   - execution_summary.txt      (Text summary)
-echo   - execution_tree.png         (Execution tree diagram)
-echo   - performance_chart.png      (Performance charts)
-echo   - workflow_diagram.png       (Workflow diagram)
-echo   - galette-output-0/ to galette-output-4/ (Model outputs)
+echo   - execution_paths_automatic.json      (Path exploration results)
+echo   - galette-output-automatic-*/ (Model outputs per path)
 echo.

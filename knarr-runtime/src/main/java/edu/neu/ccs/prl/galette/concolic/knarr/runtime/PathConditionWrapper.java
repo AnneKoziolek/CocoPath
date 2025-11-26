@@ -15,7 +15,6 @@ import za.ac.sun.cs.green.expr.UnaryOperation;
  * the current execution path and provides methods for manipulation
  * and solving.
  *
- * @author [Anne Koziolek](https://github.com/AnneKoziolek)
  */
 public class PathConditionWrapper {
 

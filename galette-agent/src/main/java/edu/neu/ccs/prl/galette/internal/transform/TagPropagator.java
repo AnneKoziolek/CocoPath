@@ -574,6 +574,14 @@ class TagPropagator extends MethodVisitor {
             case IFNULL:
             case IFNONNULL:
                 // ..., value -> ...
+                // Before popping, record constraint if symbolic execution is enabled
+                if (isSymbolicExecutionEnabled()) {
+                    recordBranchConstraint(opcode, label);
+                    // recordBranchConstraint handles the jump instruction itself
+                    // So we don't call super.visitJumpInsn for these opcodes
+                    shadowLocals.pop(1);
+                    return; // Early return - don't execute super.visitJumpInsn
+                }
                 shadowLocals.pop(1);
                 break;
             case IF_ICMPEQ:
@@ -623,6 +631,13 @@ class TagPropagator extends MethodVisitor {
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
         // ..., index -> ...
+        // Record switch constraints if symbolic execution is enabled
+        if (isSymbolicExecutionEnabled()) {
+            recordSwitchConstraint(min, max, dflt, labels, true);
+            // recordSwitchConstraint handles the switch instruction itself
+            shadowLocals.pop(1);
+            return; // Early return - don't execute super.visitTableSwitchInsn
+        }
         shadowLocals.pop(1);
         super.visitTableSwitchInsn(min, max, dflt, labels);
     }
@@ -630,6 +645,13 @@ class TagPropagator extends MethodVisitor {
     @Override
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
         // ..., key -> ...
+        // Record switch constraints if symbolic execution is enabled
+        if (isSymbolicExecutionEnabled()) {
+            recordLookupSwitchConstraint(keys, dflt, labels);
+            // recordLookupSwitchConstraint handles the switch instruction itself
+            shadowLocals.pop(1);
+            return; // Early return - don't execute super.visitLookupSwitchInsn
+        }
         shadowLocals.pop(1);
         super.visitLookupSwitchInsn(dflt, keys, labels);
     }
@@ -728,6 +750,259 @@ class TagPropagator extends MethodVisitor {
     private static boolean isMirroredField(String owner, String name, boolean isStatic) {
         // Cannot mirror tags for Reference
         return !ShadowFieldAdder.hasShadowFields(owner) && !owner.equals("java/lang/ref/Reference");
+    }
+
+    // ===== Symbolic Execution Support =====
+
+    /** Check if symbolic execution is enabled via system property */
+    private static final boolean SYMBOLIC_EXECUTION_ENABLED = Boolean.getBoolean("galette.symbolic.enabled");
+
+    /** Internal name of PathUtils runtime class for constraint collection */
+    private static final String PATH_UTILS_INTERNAL_NAME = "edu/neu/ccs/prl/galette/concolic/knarr/runtime/PathUtils";
+
+    /** Descriptor for Tag class */
+    private static final String TAG_DESC = "Ledu/neu/ccs/prl/galette/internal/runtime/Tag;";
+
+    /**
+     * Check if symbolic execution is enabled.
+     */
+    private static boolean isSymbolicExecutionEnabled() {
+        return SYMBOLIC_EXECUTION_ENABLED;
+    }
+
+    /**
+     * Record a branch constraint by peeking at the tag on the shadow stack.
+     * Called before the tag is popped for branch instructions (IFEQ, IFNE, etc.).
+     *
+     * Pattern (based on Phosphor's PathConstraintTagFactory):
+     * 1. Peek at tag on shadow stack
+     * 2. Check if tag is null (concrete value)
+     * 3. If null, execute normal branch
+     * 4. If not null (symbolic), create two paths:
+     *    a. Path where branch is taken → record constraint with branchTaken=true
+     *    b. Path where branch is NOT taken → record constraint with branchTaken=false
+     */
+    private void recordBranchConstraint(int opcode, Label label) {
+        // Create fresh labels for the instrumentation
+        Label willJump = new Label(); // Branch will be taken (symbolic)
+        Label untainted = new Label(); // No symbolic tag (concrete value)
+        Label originalEnd = new Label(); // Merge point after constraint recording
+
+        // Stack at this point: ..., value
+        // Shadow stack: ..., tag
+
+        // Duplicate the value for testing the branch condition twice
+        super.visitInsn(DUP);
+        // Stack: ..., value, value
+
+        // Peek at the tag from shadow stack to check if it's symbolic
+        shadowLocals.peek(0);
+        // Stack: ..., value, value, tag
+
+        // Check if tag is null (concrete value, no symbolic execution needed)
+        super.visitInsn(DUP);
+        super.visitJumpInsn(IFNULL, untainted);
+        // Stack: ..., value, value, tag
+
+        // Tag is NOT null (symbolic value) - we need to record constraints for both paths
+
+        // Test the branch condition to see which path we're taking
+        super.visitInsn(POP); // Remove the tag from stack
+        // Stack: ..., value, value
+
+        super.visitJumpInsn(opcode, willJump);
+        // Stack: ..., value
+
+        // === Path 1: Branch NOT taken ===
+        // Peek tag again for recording
+        shadowLocals.peek(0);
+        // Stack: ..., value, tag
+
+        // Load opcode
+        AsmUtil.pushInt(mv, opcode);
+        // Stack: ..., value, tag, opcode
+
+        // Load branchTaken = false
+        super.visitInsn(ICONST_0);
+        // Stack: ..., value, tag, opcode, false
+
+        // Call PathUtils.recordBranchConstraint(tag, opcode, branchTaken)
+        super.visitMethodInsn(
+                INVOKESTATIC, PATH_UTILS_INTERNAL_NAME, "recordBranchConstraint", "(" + TAG_DESC + "IZ)V", false);
+        // Stack: ..., value
+
+        super.visitJumpInsn(GOTO, originalEnd);
+
+        // === Path 2: Branch WILL be taken ===
+        super.visitLabel(willJump);
+        // Stack: ..., value
+
+        // Peek tag again for recording
+        shadowLocals.peek(0);
+        // Stack: ..., value, tag
+
+        // Load opcode
+        AsmUtil.pushInt(mv, opcode);
+        // Stack: ..., value, tag, opcode
+
+        // Load branchTaken = true
+        super.visitInsn(ICONST_1);
+        // Stack: ..., value, tag, opcode, true
+
+        // Call PathUtils.recordBranchConstraint(tag, opcode, branchTaken)
+        super.visitMethodInsn(
+                INVOKESTATIC, PATH_UTILS_INTERNAL_NAME, "recordBranchConstraint", "(" + TAG_DESC + "IZ)V", false);
+        // Stack: ..., value
+
+        // Now execute the original branch (jump to the user's label)
+        super.visitJumpInsn(opcode, label);
+
+        // === Path 3: Untainted (concrete value, no symbolic tag) ===
+        super.visitLabel(untainted);
+        // Stack: ..., value, value, tag (which is null)
+
+        // Clean up: pop the null tag and duplicate value
+        super.visitInsn(POP); // Remove null tag
+        // Stack: ..., value, value
+
+        // Execute normal branch
+        super.visitJumpInsn(opcode, label);
+
+        // === Merge point ===
+        super.visitLabel(originalEnd);
+        // Stack: ..., value
+
+        // Note: The value will be popped by the normal visitJumpInsn flow
+    }
+
+    /**
+     * Record switch constraint for table switch instructions.
+     *
+     * Pattern (based on Phosphor's lookupSwitch implementation):
+     * 1. Duplicate the switch index value
+     * 2. Create fresh intermediate labels for each case
+     * 3. Execute switch with fresh labels
+     * 4. At each fresh label: record constraint, then jump to original label
+     */
+    private void recordSwitchConstraint(int min, int max, Label dflt, Label[] labels, boolean isTableSwitch) {
+        // Generate fresh intermediate labels
+        Label[] freshLabels = new Label[labels.length];
+        for (int i = 0; i < freshLabels.length; i++) {
+            freshLabels[i] = new Label();
+        }
+        Label freshDefault = new Label();
+
+        // Stack at this point: ..., index
+        // Shadow stack: ..., tag
+
+        // Duplicate the switch index value for constraint recording
+        super.visitInsn(DUP);
+        // Stack: ..., index, index
+
+        // Execute table switch with fresh labels
+        super.visitTableSwitchInsn(min, max, freshDefault, freshLabels);
+
+        // For each case, record the constraint before jumping to original label
+        for (int i = 0; i < freshLabels.length; i++) {
+            super.visitLabel(freshLabels[i]);
+            // Stack: ..., index (duplicated value)
+
+            // Peek at the tag from shadow stack
+            shadowLocals.peek(0);
+            // Stack: ..., index, tag
+
+            // Load the case value (min + i)
+            AsmUtil.pushInt(mv, min + i);
+            // Stack: ..., index, tag, caseValue
+
+            // Call PathUtils.recordSwitchConstraintAuto(tag, caseValue)
+            super.visitMethodInsn(
+                    INVOKESTATIC,
+                    PATH_UTILS_INTERNAL_NAME,
+                    "recordSwitchConstraintAuto",
+                    "(" + TAG_DESC + "I)V",
+                    false);
+            // Stack: ..., index
+
+            // Jump to the original user label
+            super.visitJumpInsn(GOTO, labels[i]);
+        }
+
+        // Default case
+        super.visitLabel(freshDefault);
+        // Stack: ..., index
+
+        // For default case, we use -1 to indicate "default"
+        shadowLocals.peek(0);
+        AsmUtil.pushInt(mv, -1);
+        super.visitMethodInsn(
+                INVOKESTATIC, PATH_UTILS_INTERNAL_NAME, "recordSwitchConstraintAuto", "(" + TAG_DESC + "I)V", false);
+
+        // Jump to the original default label
+        super.visitJumpInsn(GOTO, dflt);
+    }
+
+    /**
+     * Record switch constraint for lookup switch instructions.
+     *
+     * Similar to recordSwitchConstraint but uses the actual key values from the keys array.
+     */
+    private void recordLookupSwitchConstraint(int[] keys, Label dflt, Label[] labels) {
+        // Generate fresh intermediate labels
+        Label[] freshLabels = new Label[labels.length];
+        for (int i = 0; i < freshLabels.length; i++) {
+            freshLabels[i] = new Label();
+        }
+        Label freshDefault = new Label();
+
+        // Stack at this point: ..., key
+        // Shadow stack: ..., tag
+
+        // Duplicate the switch key value for constraint recording
+        super.visitInsn(DUP);
+        // Stack: ..., key, key
+
+        // Execute lookup switch with fresh labels
+        super.visitLookupSwitchInsn(freshDefault, keys, freshLabels);
+
+        // For each case, record the constraint before jumping to original label
+        for (int i = 0; i < freshLabels.length; i++) {
+            super.visitLabel(freshLabels[i]);
+            // Stack: ..., key (duplicated value)
+
+            // Peek at the tag from shadow stack
+            shadowLocals.peek(0);
+            // Stack: ..., key, tag
+
+            // Load the actual key value for this case
+            AsmUtil.pushInt(mv, keys[i]);
+            // Stack: ..., key, tag, keyValue
+
+            // Call PathUtils.recordSwitchConstraintAuto(tag, keyValue)
+            super.visitMethodInsn(
+                    INVOKESTATIC,
+                    PATH_UTILS_INTERNAL_NAME,
+                    "recordSwitchConstraintAuto",
+                    "(" + TAG_DESC + "I)V",
+                    false);
+            // Stack: ..., key
+
+            // Jump to the original user label
+            super.visitJumpInsn(GOTO, labels[i]);
+        }
+
+        // Default case
+        super.visitLabel(freshDefault);
+        // Stack: ..., key
+
+        // For default case, we use -1 to indicate "default"
+        shadowLocals.peek(0);
+        AsmUtil.pushInt(mv, -1);
+        super.visitMethodInsn(
+                INVOKESTATIC, PATH_UTILS_INTERNAL_NAME, "recordSwitchConstraintAuto", "(" + TAG_DESC + "I)V", false);
+
+        // Jump to the original default label
+        super.visitJumpInsn(GOTO, dflt);
     }
 
     static MethodVisitor newInstance(MethodVisitor mv, MethodNode original, boolean isShadow, String owner) {

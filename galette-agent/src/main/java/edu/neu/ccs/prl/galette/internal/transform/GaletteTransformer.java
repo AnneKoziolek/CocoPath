@@ -45,7 +45,8 @@ public class GaletteTransformer {
      * <p>
      * Non-null.
      */
-    private static final ExclusionList exclusions = new ExclusionList("java/lang/Object", INTERNAL_PACKAGE_PREFIX);
+    private static final ExclusionList exclusions =
+            new ExclusionList("java/lang/Object", INTERNAL_PACKAGE_PREFIX, "java/lang/invoke/", "jdk/internal/");
 
     private static TransformationCache cache;
 

@@ -35,6 +35,25 @@ if [[ -d "$EXTERNAL_PATH" ]]; then
   echo "Building external Amalthea-acset for Vitruvius dependencies..."
   (cd "$EXTERNAL_PATH" && mvn -q clean install -DskipTests -Dcheckstyle.skip=true)
   echo "Done."
+
+  # Copy generated reaction files to internal project
+  # This ensures the internal project uses the latest generated code with symbolic execution support
+  echo "Copying generated reaction files to internal amalthea-acset-integration..."
+  INTERNAL_PATH="${ROOT_DIR}/amalthea-acset-integration"
+  if [[ -d "$INTERNAL_PATH/consistency/src/main/java/mir" ]]; then
+    # Copy reactions and routines
+    if [[ -d "$EXTERNAL_PATH/consistency/target/generated-sources/reactions/mir" ]]; then
+      cp -r "$EXTERNAL_PATH/consistency/target/generated-sources/reactions/mir/reactions" \
+            "$INTERNAL_PATH/consistency/src/main/java/mir/" 2>/dev/null || true
+      cp -r "$EXTERNAL_PATH/consistency/target/generated-sources/reactions/mir/routines" \
+            "$INTERNAL_PATH/consistency/src/main/java/mir/" 2>/dev/null || true
+      echo "Reaction files copied successfully."
+    else
+      echo "WARNING: Generated reaction files not found in external Amalthea-acset"
+    fi
+  else
+    echo "WARNING: Internal amalthea-acset-integration mir directory not found"
+  fi
 else
   echo "WARNING: External Amalthea-acset not found at $EXTERNAL_PATH"
   echo "Vitruvius transformations may fail without it."

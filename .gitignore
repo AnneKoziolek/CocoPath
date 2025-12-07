@@ -230,3 +230,16 @@ knarr-runtime/galette-output-multivar-0_0/vsum/correspondences.correspondence
 knarr-runtime/galette-output-multivar-0_0/vsum/models.models
 knarr-runtime/galette-output-multivar-0_0/vsum/uuid.uuid
 knarr-runtime/galette-output-multivar-0_1/vsum/uuid.uuid
+amalthea-acset-integration/consistency/src/main/java/mir/reactions/amalthea2ascet/.Amalthea2ascetChangePropagationSpecification.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/reactions/amalthea2ascet/.ComponentContainerInsertedAsRootReaction.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/reactions/amalthea2ascet/.TaskCreatedReaction.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/reactions/amalthea2ascet/.TaskDeletedReaction.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.Amalthea2ascetRoutinesFacade.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.Amalthea2ascetRoutinesFacadesProvider.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.CreateAndRegisterRootComponentContainerRoutine.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.CreateAscetTaskRoutine.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.CreateInterruptTaskRoutine.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.CreatePeriodicTaskRoutine.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.CreateSoftwareTaskRoutine.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.CreateTimeTableTaskRoutine.java._trace
+amalthea-acset-integration/consistency/src/main/java/mir/routines/amalthea2ascet/.DeleteTaskRoutine.java._trace

@@ -1,6 +1,6 @@
 package mir.reactions.amalthea2ascet;
 
-import java.util.Collections;
+import java.util.Set;
 import tools.vitruv.change.composite.MetamodelDescriptor;
 import tools.vitruv.change.propagation.ChangePropagationSpecification;
 import tools.vitruv.dsls.reactions.runtime.reactions.AbstractReactionsChangePropagationSpecification;
@@ -8,17 +8,13 @@ import tools.vitruv.dsls.reactions.runtime.routines.RoutinesFacadesProvider;
 import tools.vitruv.dsls.reactions.runtime.state.ReactionExecutionState;
 import tools.vitruv.dsls.reactions.runtime.structure.ReactionsImportPath;
 
-/**
- * Generated Java Code from Reactions DSL.
- *
- */
 @SuppressWarnings("all")
 public class Amalthea2ascetChangePropagationSpecification extends AbstractReactionsChangePropagationSpecification
         implements ChangePropagationSpecification {
     public Amalthea2ascetChangePropagationSpecification() {
         super(
-                MetamodelDescriptor.with(Collections.singleton("http://vitruv.tools/reactionsparser/model2")),
-                MetamodelDescriptor.with(Collections.singleton("http://vitruv.tools/reactionsparser/model")));
+                MetamodelDescriptor.with(Set.of("http://vitruv.tools/reactionsparser/model2")),
+                MetamodelDescriptor.with(Set.of("http://vitruv.tools/reactionsparser/model")));
     }
 
     protected RoutinesFacadesProvider createRoutinesFacadesProvider(final ReactionExecutionState executionState) {

@@ -434,3 +434,7 @@ knarr-runtime/galette-output-multivar-0_-2147483646/vsum/models.models
 knarr-runtime/galette-output-multivar-0_-2147483646/vsum/uuid.uuid
 knarr-runtime/galette-output-multivar-0_-2147483647/vsum/uuid.uuid
 knarr-runtime/galette-output-multivar-0_-2147483648/vsum/uuid.uuid
+knarr-runtime/src/test/java/edu/neu/ccs/prl/galette/concolic/knarr/runtime/IntegrationSwitchTest.java.disabled
+knarr-runtime/src/test/java/edu/neu/ccs/prl/galette/concolic/knarr/runtime/EndToEndPathExplorationTest.java.disabled
+knarr-runtime/src/test/java/edu/neu/ccs/prl/galette/concolic/knarr/runtime/AutomaticConstraintCollectionTest.java.disabled
+knarr-runtime/galette-output-multivar-0_1/vsum/uuid.uuid

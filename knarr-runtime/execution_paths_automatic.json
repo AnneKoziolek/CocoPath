@@ -6,9 +6,11 @@
     },
     "constraints": [
       "(0<=user_choice)&&(user_choice<5)",
+      "(0<=user_choice)&&(user_choice<5)",
+      "user_choice==0",
       "user_choice==0"
     ],
-    "executionTime": 3458
+    "executionTime": 6666
   },
   {
     "pathId": 2,
@@ -17,9 +19,11 @@
     },
     "constraints": [
       "(0<=user_choice)&&(user_choice<5)",
+      "(0<=user_choice)&&(user_choice<5)",
+      "user_choice==1",
       "user_choice==1"
     ],
-    "executionTime": 142
+    "executionTime": 311
   },
   {
     "pathId": 3,
@@ -28,9 +32,11 @@
     },
     "constraints": [
       "(0<=user_choice)&&(user_choice<5)",
+      "(0<=user_choice)&&(user_choice<5)",
+      "user_choice==2",
       "user_choice==2"
     ],
-    "executionTime": 152
+    "executionTime": 259
   },
   {
     "pathId": 4,
@@ -39,9 +45,11 @@
     },
     "constraints": [
       "(0<=user_choice)&&(user_choice<5)",
+      "(0<=user_choice)&&(user_choice<5)",
+      "user_choice==3",
       "user_choice==3"
     ],
-    "executionTime": 114
+    "executionTime": 388
   },
   {
     "pathId": 5,
@@ -50,8 +58,10 @@
     },
     "constraints": [
       "(0<=user_choice)&&(user_choice<5)",
+      "(0<=user_choice)&&(user_choice<5)",
+      "user_choice==4",
       "user_choice==4"
     ],
-    "executionTime": 130
+    "executionTime": 227
   }
 ]

@@ -17,8 +17,8 @@ import za.ac.sun.cs.green.expr.Operation.Operator;
 public class PathExplorer {
 
     private static final boolean DEBUG = Boolean.getBoolean("path.explorer.debug");
-    private static final int MAX_ITERATIONS = 
-        Integer.getInteger("path.explorer.max.iterations", 30); // Reduced from 100 for debugging
+    private static final int MAX_ITERATIONS =
+            Integer.getInteger("path.explorer.max.iterations", 30); // Reduced from 100 for debugging
 
     public static class PathRecord {
         public final int pathId;

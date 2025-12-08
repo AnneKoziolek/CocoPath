@@ -118,6 +118,20 @@ public class GaletteTransformer {
         ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS);
         // Remove computed frames
         ClassVisitor cv = hasFrames ? cw : new FrameRemover(cw);
+
+        // Add comparison interception for bytecode-level constraint collection
+        // Enable for application classes (not internal Galette classes)
+        boolean interceptorEnabled = Boolean.getBoolean("galette.concolic.interception.enabled")
+                || !cn.name.startsWith("edu/neu/ccs/prl/galette/internal/");
+
+        if (interceptorEnabled && !cn.name.startsWith("edu/neu/ccs/prl/galette/internal/")) {
+            // Debug: Log when we add the interceptor
+            if (cn.name.contains("BytecodeInterceptionTest")) {
+                System.out.println("🎯 Adding ComparisonInterceptorVisitor to: " + cn.name);
+            }
+            cv = new ComparisonInterceptorVisitor(cv);
+        }
+
         // Make the members of certain classes publicly accessible
         if (AccessModifier.isApplicable(cn.name)) {
             cv = new AccessModifier(cv);

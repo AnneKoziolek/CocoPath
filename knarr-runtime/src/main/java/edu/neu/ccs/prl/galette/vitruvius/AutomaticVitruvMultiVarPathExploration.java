@@ -162,19 +162,10 @@ public class AutomaticVitruvMultiVarPathExploration {
         // Reset path condition
         PathUtils.resetPC();
 
-        // Step 1: Add domain constraints for BOTH variables
-
-        // Limit to five choices (0-4) to avoid solver producing invalid/min-value cases
-        PathUtils.addIntDomainConstraint(varName1, 0, 5);
-        PathUtils.addIntDomainConstraint(varName2, 0, 5);
-
-        // Step 2: Record path constraints for BOTH variables
-
-        PathUtils.addSwitchConstraint(varName1, taggedInput1);
-        PathUtils.addSwitchConstraint(varName2, taggedInput2);
-
+        // Constraints are now automatically recorded by the reactions through SymbolicComparison
+        // No need to manually add them here anymore
         if (DEBUG) {
-            System.out.println("[Execute] Added constraints:");
+            System.out.println("[Execute] Constraints will be recorded by reactions via SymbolicComparison");
         }
 
         try {

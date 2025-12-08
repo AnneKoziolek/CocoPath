@@ -400,8 +400,27 @@ public class PathExplorer {
         }
 
         // Try to increment the rightmost (last) variable first
-        int rightmostVarIdx = numPath - 1;
-        Expression rightmostConstraint = pathConstraints.get(rightmostVarIdx);
+        // Note: We need to map from constraints to variables - multiple constraints may be for the same variable
+        // For simplicity, we'll try to negate the last constraint for the last variable
+        int rightmostVarIdx = numVars - 1; // Use number of variables, not number of constraints
+
+        // Find the last constraint that involves the rightmost variable
+        Expression rightmostConstraint = null;
+        for (int i = pathConstraints.size() - 1; i >= 0; i--) {
+            Expression constraint = pathConstraints.get(i);
+            // Check if this constraint involves the rightmost variable
+            // For now, we'll just use the last constraint for the rightmost variable
+            if (constraint.toString().contains(variableNames.get(rightmostVarIdx))) {
+                rightmostConstraint = constraint;
+                break;
+            }
+        }
+
+        if (rightmostConstraint == null) {
+            // Fallback: use any constraint for the rightmost variable
+            rightmostConstraint = pathConstraints.get(pathConstraints.size() - 1);
+        }
+
         Expression negatedRightmost = ConstraintSolver.negateConstraint(rightmostConstraint);
 
         // Add negation for rightmost variable

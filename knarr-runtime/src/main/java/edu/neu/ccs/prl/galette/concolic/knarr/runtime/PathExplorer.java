@@ -17,7 +17,8 @@ import za.ac.sun.cs.green.expr.Operation.Operator;
 public class PathExplorer {
 
     private static final boolean DEBUG = Boolean.getBoolean("path.explorer.debug");
-    private static final int MAX_ITERATIONS = Integer.getInteger("path.explorer.max.iterations", 100);
+    private static final int MAX_ITERATIONS = 
+        Integer.getInteger("path.explorer.max.iterations", 30); // Reduced from 100 for debugging
 
     public static class PathRecord {
         public final int pathId;
@@ -347,22 +348,35 @@ public class PathExplorer {
     }
 
     private void extractDomainConstraints(List<Expression> constraints, int numVars) {
-        // Domain constraints are the first numVars constraints
-        // They have the form: (min <= var) AND (var < max)
-        if (constraints.size() >= numVars) {
+        // Domain constraints have the form: (min <= var) AND (var <= max)
+        // They alternate with equality constraints: [domain1, equality1, domain2, equality2, ...]
+        // We need to extract every other constraint starting from index 0
+        if (constraints.size() >= numVars * 2) {
             List<Expression> domainExprs = new ArrayList<>();
+
+            // Extract domain constraints (every other constraint, starting at 0)
             for (int i = 0; i < numVars; i++) {
-                domainExprs.add(constraints.get(i));
+                int constraintIndex = i * 2; // 0, 2, 4, ...
+                if (constraintIndex < constraints.size()) {
+                    Expression constraint = constraints.get(constraintIndex);
+                    // Verify it looks like a domain constraint (contains >= or <=)
+                    String constraintStr = constraint.toString();
+                    if (constraintStr.contains(">=") || constraintStr.contains("<=")) {
+                        domainExprs.add(constraint);
+                    }
+                }
             }
 
             // Combine domain constraints with AND
-            domainConstraint = domainExprs.get(0);
-            for (int i = 1; i < domainExprs.size(); i++) {
-                domainConstraint = new BinaryOperation(Operator.AND, domainConstraint, domainExprs.get(i));
-            }
+            if (!domainExprs.isEmpty()) {
+                domainConstraint = domainExprs.get(0);
+                for (int i = 1; i < domainExprs.size(); i++) {
+                    domainConstraint = new BinaryOperation(Operator.AND, domainConstraint, domainExprs.get(i));
+                }
 
-            if (DEBUG) {
-                System.out.println("Extracted domain constraints: " + domainConstraint);
+                if (DEBUG) {
+                    System.out.println("Extracted domain constraints: " + domainConstraint);
+                }
             }
         }
     }
@@ -383,20 +397,20 @@ public class PathExplorer {
             return null;
         }
 
-        // Path constraints are after domain constraints
-        // For 2 variables: constraints = [domain1, domain2, switch1, switch2]
-        int numDomain = numVars;
-        int numPath = currentConstraints.size() - numDomain;
-
-        if (numPath <= 0) {
-            if (DEBUG) System.out.println("No path constraints to negate");
-            return null;
+        // Constraints alternate: [domain1, equality1, domain2, equality2, ...]
+        // For 2 variables: constraints = [domain1, switch1, domain2, switch2]
+        // We need to extract equality constraints (indices 1, 3, 5, ...)
+        List<Expression> pathConstraints = new ArrayList<>();
+        for (int i = 0; i < numVars; i++) {
+            int equalityIndex = i * 2 + 1; // 1, 3, 5, ...
+            if (equalityIndex < currentConstraints.size()) {
+                pathConstraints.add(currentConstraints.get(equalityIndex));
+            }
         }
 
-        // Extract path constraints (one per variable, in order)
-        List<Expression> pathConstraints = new ArrayList<>();
-        for (int i = 0; i < numPath; i++) {
-            pathConstraints.add(currentConstraints.get(numDomain + i));
+        if (pathConstraints.isEmpty()) {
+            if (DEBUG) System.out.println("No path constraints to negate");
+            return null;
         }
 
         // Try to increment the rightmost (last) variable first

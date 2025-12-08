@@ -17,7 +17,7 @@ public class ComparisonInterceptorVisitor extends ClassVisitor {
 
     public ComparisonInterceptorVisitor(ClassVisitor cv) {
         super(GaletteTransformer.ASM_VERSION, cv);
-        System.out.println("🔍 ComparisonInterceptorVisitor created for class transformation");
+        // System.out.println("🔍 ComparisonInterceptorVisitor created for class transformation");
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ComparisonInterceptorVisitor extends ClassVisitor {
                     || opcode == Opcodes.FCMPG
                     || opcode == Opcodes.DCMPL
                     || opcode == Opcodes.DCMPG) {
-                System.out.println("🎯 Intercepting comparison instruction: " + opcode);
+                // System.out.println("🎯 Intercepting comparison instruction: " + opcode);
             }
 
             switch (opcode) {
@@ -78,7 +78,7 @@ public class ComparisonInterceptorVisitor extends ClassVisitor {
             if (opcode >= Opcodes.IF_ICMPEQ && opcode <= Opcodes.IF_ICMPLE
                     || opcode == Opcodes.IF_ACMPEQ
                     || opcode == Opcodes.IF_ACMPNE) {
-                System.out.println("🎯 Intercepting jump instruction: " + opcodeToString(opcode));
+                // System.out.println("🎯 Intercepting jump instruction: " + opcodeToString(opcode));
             }
 
             switch (opcode) {

@@ -12,36 +12,17 @@ EXTERNAL_PATH="/home/anne/CocoPath/Amalthea-acset"
 SKIP_EXTERNAL_BUILD=false
 COPY_ONLY=false
 
-# Build control flags (similar to cleanBuildOfMain)
-FORCE_CLEAN_BUILD=false      # Set to true for complete clean rebuild (overrides all others)
-FORCE_REBUILD_AGENT=false    # Force rebuild galette-agent JAR only
-FORCE_REBUILD_CLASSES=false  # Force rebuild knarr-runtime Java classes only
-FORCE_REBUILD_JAVA=false     # Force rebuild instrumented Java installation only
-
 usage() {
   cat <<'EOF'
-Usage: ./run-instrumented-with-option-flags.sh [OPTIONS]
+Usage: ./run-instrumented-copy.sh [--internal|--external] [--external-path PATH] [--skip-external-build]
 
-Execution Modes:
+Options:
   --internal, -i         Use internal amalthea-acset-integration module (default)
   --external, -e         Use external Amalthea-acset repository
   --external-path PATH   Override path to external Amalthea-acset checkout
   --skip-external-build, -s  Skip building external Amalthea-acset (use if nothing changed)
   --copy-only, -c        Only copy generated files from external to internal, then exit
-
-Build Control:
-  --clean                Force complete clean rebuild (overrides all other flags)
-  --rebuild-agent        Force rebuild galette-agent JAR with interception
-  --rebuild-classes      Force rebuild knarr-runtime Java classes
-  --rebuild-java         Force rebuild instrumented Java installation
-  --no-build            Skip all rebuilds (use existing)
-
-Other Options:
   --help, -h             Show this help message
-
-Examples:
-  ./run-instrumented-with-option-flags.sh --internal --rebuild-agent
-  ./run-instrumented-with-option-flags.sh --external --clean
 EOF
 }
 
@@ -74,26 +55,6 @@ while [[ $# -gt 0 ]]; do
     --copy-only|-c)
       COPY_ONLY=true
       INTERACTIVE_MODE=false
-      shift
-      ;;
-    --clean)
-      FORCE_CLEAN_BUILD=true
-      shift
-      ;;
-    --rebuild-agent)
-      FORCE_REBUILD_AGENT=true
-      shift
-      ;;
-    --rebuild-classes)
-      FORCE_REBUILD_CLASSES=true
-      shift
-      ;;
-    --rebuild-java)
-      FORCE_REBUILD_JAVA=true
-      shift
-      ;;
-    --no-build)
-      # Skip all rebuilds
       shift
       ;;
     --help|-h)
@@ -262,34 +223,6 @@ else
   RESTORE_POM=true
 fi
 
-# Build components based on flags
-if [[ "$FORCE_CLEAN_BUILD" == "true" ]]; then
-  echo ""
-  echo "🧹 Clean rebuild requested - rebuilding all components"
-
-  # Clean everything
-  echo "Cleaning target directories..."
-  mvn -q -f "${ROOT_DIR}/pom.xml" clean
-  rm -rf "${SCRIPT_DIR}/target/galette/java" 2>/dev/null || true
-
-  # Force rebuild all
-  FORCE_REBUILD_AGENT=true
-  FORCE_REBUILD_CLASSES=true
-  FORCE_REBUILD_JAVA=true
-fi
-
-# Build galette-agent if needed
-if [[ "$FORCE_REBUILD_AGENT" == "true" ]] || [[ ! -f "${ROOT_DIR}/galette-agent/target/galette-agent-1.0.0-SNAPSHOT.jar" ]]; then
-  echo ""
-  echo "🔨 Building galette-agent with ComparisonInterceptorVisitor..."
-  (cd "${ROOT_DIR}/galette-agent" && mvn -q clean package -DskipTests -Dcheckstyle.skip=true)
-  if [[ $? -ne 0 ]]; then
-    echo "❌ Failed to build galette-agent!" >&2
-    exit 1
-  fi
-  echo "✅ Galette agent built successfully"
-fi
-
 # Resolve Galette agent location
 GALETTE_AGENT=""
 if [[ -f "${ROOT_DIR}/galette-agent/target/galette-agent-1.0.0-SNAPSHOT.jar" ]]; then
@@ -303,33 +236,9 @@ fi
 
 echo "Galette agent: $GALETTE_AGENT"
 
-# Build knarr-runtime classes if needed
-if [[ "$FORCE_REBUILD_CLASSES" == "true" ]] || [[ ! -d "${SCRIPT_DIR}/target/classes" ]]; then
-  echo "🔨 Building knarr-runtime classes..."
-  mvn -q -f "${ROOT_DIR}/pom.xml" clean install -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dskip=true -pl knarr-runtime -am
-else
-  echo "⚡ Using existing knarr-runtime classes"
-fi
-
-# Build instrumented Java if needed
-if [[ "$FORCE_REBUILD_JAVA" == "true" ]] || [[ ! -d "${SCRIPT_DIR}/target/galette/java" ]]; then
-  echo "🔨 Creating instrumented Java runtime..."
-
-  # Clean old instrumented Java if exists
-  if [[ -d "${SCRIPT_DIR}/target/galette/java" ]]; then
-    rm -rf "${SCRIPT_DIR}/target/galette/java"
-  fi
-
-  mvn -q -f "${ROOT_DIR}/pom.xml" process-test-resources -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dskip=true -pl knarr-runtime
-
-  if [[ ! -d "${SCRIPT_DIR}/target/galette/java" ]]; then
-    echo "❌ Failed to create instrumented Java!" >&2
-    exit 1
-  fi
-  echo "✅ Instrumented Java created"
-else
-  echo "⚡ Using existing instrumented Java"
-fi
+# Build knarr-runtime with instrumentation (run from root pom)
+mvn -q -f "${ROOT_DIR}/pom.xml" clean install -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dskip=true -pl knarr-runtime -am
+mvn -q -f "${ROOT_DIR}/pom.xml" process-test-resources -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dskip=true -pl knarr-runtime
 
 INSTRUMENTED_JAVA="${SCRIPT_DIR}/target/galette/java"
 if [[ ! -x "$INSTRUMENTED_JAVA/bin/java" ]]; then
@@ -360,8 +269,6 @@ set -x
   -Dgalette.coverage=true \
   -Dsymbolic.execution.debug=true \
   -Dgalette.debug=true \
-  -Dgalette.concolic.interception.enabled=true \
-  -Dgalette.concolic.interception.debug=true \
   -Dpath.explorer.max.iterations=30 \
   -DDEBUG=true \
   -Dpath.explorer.debug=true \

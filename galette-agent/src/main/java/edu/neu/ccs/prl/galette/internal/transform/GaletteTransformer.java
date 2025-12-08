@@ -45,7 +45,28 @@ public class GaletteTransformer {
      * <p>
      * Non-null.
      */
-    private static final ExclusionList exclusions = new ExclusionList("java/lang/Object", INTERNAL_PACKAGE_PREFIX);
+    private static final ExclusionList exclusions = new ExclusionList(
+            "java/lang/Object",
+            INTERNAL_PACKAGE_PREFIX,
+            // Exclude concolic exploration framework to avoid capturing its own comparisons
+            "edu/neu/ccs/prl/galette/concolic/",
+            // Exclude example exploration code (ModelTransformationExample, etc.)
+            "edu/neu/ccs/prl/galette/examples/ModelTransformationExample",
+            // Exclude example models (they contain their own logic comparisons)
+            "edu/neu/ccs/prl/galette/examples/models/",
+            // Exclude Green solver framework
+            "za/ac/sun/cs/green/",
+            "edu/gmu/swe/greensolver/",
+            // Exclude knarr-runtime framework classes
+            "edu/neu/ccs/prl/galette/knarr/",
+            // Exclude PathConditionWrapper and related utilities
+            "edu/neu/ccs/prl/galette/PathConstraintAPI",
+            "java/util/",
+            "java/util/logging/",
+            "java/util/function/",
+            "java/util/stream/",
+            "java/util/concurrent/",
+            "com/microsoft/z3/");
 
     private static TransformationCache cache;
 

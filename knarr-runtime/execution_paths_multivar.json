@@ -8,210 +8,210 @@
       "inputs": {"user_choice_1": 0, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 2934
+      "execution_time_ms": 495
     },
     {
       "path_id": 1,
       "inputs": {"user_choice_1": 1, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 5
+      "execution_time_ms": 2
     },
     {
       "path_id": 2,
       "inputs": {"user_choice_1": 2, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 6
+      "execution_time_ms": 2
     },
     {
       "path_id": 3,
       "inputs": {"user_choice_1": 3, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 16
+      "execution_time_ms": 2
     },
     {
       "path_id": 4,
       "inputs": {"user_choice_1": 4, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 11
+      "execution_time_ms": 2
     },
     {
       "path_id": 5,
       "inputs": {"user_choice_1": 5, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 13
+      "execution_time_ms": 1
     },
     {
       "path_id": 6,
       "inputs": {"user_choice_1": 6, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 7
+      "execution_time_ms": 2
     },
     {
       "path_id": 7,
       "inputs": {"user_choice_1": 7, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 19
+      "execution_time_ms": 2
     },
     {
       "path_id": 8,
       "inputs": {"user_choice_1": 8, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 7
+      "execution_time_ms": 3
     },
     {
       "path_id": 9,
       "inputs": {"user_choice_1": 9, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 8
+      "execution_time_ms": 1
     },
     {
       "path_id": 10,
       "inputs": {"user_choice_1": 10, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 9
+      "execution_time_ms": 1
     },
     {
       "path_id": 11,
       "inputs": {"user_choice_1": 11, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 15
+      "execution_time_ms": 2
     },
     {
       "path_id": 12,
       "inputs": {"user_choice_1": 12, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 11
+      "execution_time_ms": 4
     },
     {
       "path_id": 13,
       "inputs": {"user_choice_1": 13, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 6
+      "execution_time_ms": 1
     },
     {
       "path_id": 14,
       "inputs": {"user_choice_1": 14, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 7
+      "execution_time_ms": 2
     },
     {
       "path_id": 15,
       "inputs": {"user_choice_1": 15, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 16
+      "execution_time_ms": 2
     },
     {
       "path_id": 16,
       "inputs": {"user_choice_1": 16, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 9
+      "execution_time_ms": 2
     },
     {
       "path_id": 17,
       "inputs": {"user_choice_1": 17, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 11
+      "execution_time_ms": 1
     },
     {
       "path_id": 18,
       "inputs": {"user_choice_1": 18, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 10
+      "execution_time_ms": 2
     },
     {
       "path_id": 19,
       "inputs": {"user_choice_1": 19, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 10
+      "execution_time_ms": 1
     },
     {
       "path_id": 20,
       "inputs": {"user_choice_1": 20, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 9
+      "execution_time_ms": 1
     },
     {
       "path_id": 21,
       "inputs": {"user_choice_1": 21, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 7
+      "execution_time_ms": 1
     },
     {
       "path_id": 22,
       "inputs": {"user_choice_1": 22, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 9
+      "execution_time_ms": 1
     },
     {
       "path_id": 23,
       "inputs": {"user_choice_1": 23, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 6
+      "execution_time_ms": 1
     },
     {
       "path_id": 24,
       "inputs": {"user_choice_1": 24, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 7
+      "execution_time_ms": 2
     },
     {
       "path_id": 25,
       "inputs": {"user_choice_1": 25, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 8
+      "execution_time_ms": 1
     },
     {
       "path_id": 26,
       "inputs": {"user_choice_1": 26, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 12
+      "execution_time_ms": 1
     },
     {
       "path_id": 27,
       "inputs": {"user_choice_1": 27, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 7
+      "execution_time_ms": 1
     },
     {
       "path_id": 28,
       "inputs": {"user_choice_1": 28, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 11
+      "execution_time_ms": 1
     },
     {
       "path_id": 29,
       "inputs": {"user_choice_1": 29, "user_choice_2": 0},
       "constraints": [],
       "num_constraints": 0,
-      "execution_time_ms": 10
+      "execution_time_ms": 1
     }
   ]
 }

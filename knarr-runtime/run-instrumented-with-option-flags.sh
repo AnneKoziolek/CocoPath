@@ -17,6 +17,7 @@ FORCE_CLEAN_BUILD=false      # Set to true for complete clean rebuild (overrides
 FORCE_REBUILD_AGENT=false    # Force rebuild galette-agent JAR only
 FORCE_REBUILD_CLASSES=false  # Force rebuild knarr-runtime Java classes only
 FORCE_REBUILD_JAVA=false     # Force rebuild instrumented Java installation only
+PURGE_ARTIFACTS=false        # Delete all build artifacts and caches
 
 usage() {
   cat <<'EOF'
@@ -35,6 +36,7 @@ Build Control:
   --rebuild-classes      Force rebuild knarr-runtime Java classes
   --rebuild-java         Force rebuild instrumented Java installation
   --no-build            Skip all rebuilds (use existing)
+  --purge                Delete all build artifacts and caches before building
 
 Other Options:
   --help, -h             Show this help message
@@ -94,6 +96,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-build)
       # Skip all rebuilds
+      shift
+      ;;
+    --purge)
+      PURGE_ARTIFACTS=true
       shift
       ;;
     --help|-h)
@@ -260,6 +266,40 @@ else
 
   "$PYTHON_CMD" "${SCRIPT_DIR}/switch-dependency.py" internal "${SCRIPT_DIR}/pom.xml"
   RESTORE_POM=true
+fi
+
+# Handle purge first if requested
+if [[ "$PURGE_ARTIFACTS" == "true" ]]; then
+  echo ""
+  echo "🗑️ Purging all build artifacts and caches..."
+
+  # Delete galette-agent artifacts
+  rm -rf "${ROOT_DIR}/galette-agent/target" 2>/dev/null || true
+  echo "  ✓ Deleted galette-agent/target"
+
+  # Delete instrumented Java
+  rm -rf "${SCRIPT_DIR}/target/galette" 2>/dev/null || true
+  echo "  ✓ Deleted instrumented Java"
+
+  # Delete knarr-runtime classes
+  rm -rf "${SCRIPT_DIR}/target/classes" 2>/dev/null || true
+  rm -rf "${SCRIPT_DIR}/target/test-classes" 2>/dev/null || true
+  echo "  ✓ Deleted knarr-runtime classes"
+
+  # Delete galette output directories
+  rm -rf "${SCRIPT_DIR}"/galette-output-* 2>/dev/null || true
+  echo "  ✓ Deleted galette output directories"
+
+  # Delete Maven cache for galette modules
+  rm -rf "$HOME/.m2/repository/edu/neu/ccs/prl/galette" 2>/dev/null || true
+  echo "  ✓ Deleted Maven cache for galette modules"
+
+  echo "🗑️ Purge complete"
+
+  # Force rebuild everything after purge
+  FORCE_REBUILD_AGENT=true
+  FORCE_REBUILD_CLASSES=true
+  FORCE_REBUILD_JAVA=true
 fi
 
 # Build components based on flags

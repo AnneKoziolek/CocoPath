@@ -380,9 +380,9 @@ public final class PathUtils {
                     System.out.println("PathUtils: " + value1 + " DCMPL " + value2 + " -> " + result);
                 }
             } else {
-            System.out.println("⚠️ DCMPL not enabled or not symbolic: ENABLED=" + isEnabled() + ", mightBeSymbolic="
-                    + mightBeSymbolic(value1, value2));
-        }
+                System.out.println("⚠️ DCMPL not enabled or not symbolic: ENABLED=" + isEnabled() + ", mightBeSymbolic="
+                        + mightBeSymbolic(value1, value2));
+            }
 
             return result;
         } finally {
@@ -423,9 +423,9 @@ public final class PathUtils {
                     System.out.println("PathUtils: " + value1 + " DCMPG " + value2 + " -> " + result);
                 }
             } else {
-            System.out.println("⚠️ DCMPG not enabled or not symbolic: ENABLED=" + isEnabled() + ", mightBeSymbolic="
-                    + mightBeSymbolic(value1, value2));
-        }
+                System.out.println("⚠️ DCMPG not enabled or not symbolic: ENABLED=" + isEnabled() + ", mightBeSymbolic="
+                        + mightBeSymbolic(value1, value2));
+            }
 
             return result;
         } finally {

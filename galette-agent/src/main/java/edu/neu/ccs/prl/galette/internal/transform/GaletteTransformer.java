@@ -46,22 +46,37 @@ public class GaletteTransformer {
      * Non-null.
      */
     private static final ExclusionList exclusions = new ExclusionList(
-            "java/lang/Object",
+            // TEMPORARY: EXTENSIVE EXCLUSIONS FOR STEPWISE INTEGRATION
+            // We're being overly conservative to first get a working baseline
+
+            // Exclude ALL Java standard library to prevent any recursion issues
+            "java/", // ALL java classes including java.lang, java.util, etc.
+            "javax/",
+            "sun/",
+            "jdk/",
+
+            // Exclude ALL Vitruvius framework classes
+            "tools/vitruv/", // ALL Vitruvius framework
+            "mir/routines/", // Generated Vitruvius routines
+            "mir/reactions/", // Generated Vitruvius reactions
+
+            // Exclude ALL Eclipse/EMF framework
+            "org/eclipse/", // All Eclipse including EMF
+            "org/eclipse/emf/",
+            "org/eclipse/xtend/",
+            "org/eclipse/xtext/",
+
+            // Exclude ALL third-party libraries
+            "org/", // All org.* packages (Apache, OSGi, etc.)
+            "com/", // All com.* packages (Google, Microsoft, etc.)
+
+            // Exclude our internal packages
             INTERNAL_PACKAGE_PREFIX,
-            // Exclude concolic exploration framework to avoid capturing its own comparisons
-            "edu/neu/ccs/prl/galette/concolic/",
-            // Exclude example exploration code (ModelTransformationExample, etc.)
-            "edu/neu/ccs/prl/galette/examples/ModelTransformationExample",
-            // Exclude example models (they contain their own logic comparisons)
-            "edu/neu/ccs/prl/galette/examples/models/",
-            // Exclude Green solver framework
+            "edu/neu/ccs/prl/galette/", // ALL Galette classes
+
+            // Exclude solver frameworks
             "za/ac/sun/cs/green/",
-            "edu/gmu/swe/greensolver/",
-            // Exclude knarr-runtime framework classes
-            "edu/neu/ccs/prl/galette/knarr/",
-            // Exclude PathConditionWrapper and related utilities
-            "edu/neu/ccs/prl/galette/PathConstraintAPI",
-            "com/microsoft/z3/");
+            "edu/gmu/swe/");
 
     private static TransformationCache cache;
 

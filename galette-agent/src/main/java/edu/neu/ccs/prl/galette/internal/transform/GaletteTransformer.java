@@ -46,33 +46,36 @@ public class GaletteTransformer {
      * Non-null.
      */
     private static final ExclusionList exclusions = new ExclusionList(
-            // TEMPORARY: EXTENSIVE EXCLUSIONS FOR STEPWISE INTEGRATION
-            // We're being overly conservative to first get a working baseline
+            // default exclusions by Galette, keep these
+            "java/lang/Object",
+            INTERNAL_PACKAGE_PREFIX,
 
-            // Exclude ALL Java standard library to prevent any recursion issues
-            "java/", // ALL java classes including java.lang, java.util, etc.
+            // STEPWISE INTEGRATION: Extensive exclusions but allow reactions
+            // Start very conservative, then gradually reduce exclusions
+            // Exclude ALL Java standard library
+            "java/",
             "javax/",
             "sun/",
             "jdk/",
 
-            // Exclude ALL Vitruvius framework classes
-            "tools/vitruv/", // ALL Vitruvius framework
-            "mir/routines/", // Generated Vitruvius routines
-            "mir/reactions/", // Generated Vitruvius reactions
+            // Exclude most Vitruvius framework BUT ALLOW reactions/routines
+            "tools/vitruv/",
+            "edu/kit/ipd/sdq/commons/util/",
+            // NOTE: mir/reactions/ and mir/routines/ are NOT excluded - we want to instrument them
 
-            // Exclude ALL Eclipse/EMF framework
-            "org/eclipse/", // All Eclipse including EMF
-            "org/eclipse/emf/",
-            "org/eclipse/xtend/",
-            "org/eclipse/xtext/",
+            // Exclude Eclipse/EMF framework
+            "org/eclipse/",
 
-            // Exclude ALL third-party libraries
-            "org/", // All org.* packages (Apache, OSGi, etc.)
-            "com/", // All com.* packages (Google, Microsoft, etc.)
+            // Exclude all third-party libraries
+            "org/",
+            "com/",
+            "net/",
+
+            // Exclude utility classes that might cause issues
+            "edu/kit/ipd/sdq/",
 
             // Exclude our internal packages
-            INTERNAL_PACKAGE_PREFIX,
-            "edu/neu/ccs/prl/galette/", // ALL Galette classes
+            // "edu/neu/ccs/prl/galette/", // ALL Galette classes
 
             // Exclude solver frameworks
             "za/ac/sun/cs/green/",
@@ -84,6 +87,7 @@ public class GaletteTransformer {
         ClassReader cr = new ClassReader(classFileBuffer);
         String className = cr.getClassName();
         TransformationCache currentCache = getCache();
+
         if (exclusions.isExcluded(className) || AsmUtil.isSet(cr.getAccess(), Opcodes.ACC_MODULE)) {
             // Skip excluded classes and module info
             return null;
@@ -157,7 +161,7 @@ public class GaletteTransformer {
 
         if (interceptorEnabled && !cn.name.startsWith("edu/neu/ccs/prl/galette/internal/")) {
             // Debug: Log when we add the interceptor
-            if (cn.name.contains("BytecodeInterceptionTest")) {
+            if (cn.name.contains("BytecodeInterceptionTest") || cn.name.startsWith("mir/")) {
                 System.out.println("🎯 Adding ComparisonInterceptorVisitor to: " + cn.name);
             }
             cv = new ComparisonInterceptorVisitor(cv);

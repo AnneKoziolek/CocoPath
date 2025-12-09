@@ -61,11 +61,6 @@ public class GaletteTransformer {
             "edu/neu/ccs/prl/galette/knarr/",
             // Exclude PathConditionWrapper and related utilities
             "edu/neu/ccs/prl/galette/PathConstraintAPI",
-            "java/util/",
-            "java/util/logging/",
-            "java/util/function/",
-            "java/util/stream/",
-            "java/util/concurrent/",
             "com/microsoft/z3/");
 
     private static TransformationCache cache;

@@ -353,6 +353,7 @@ MAIN_CLASS="edu.neu.ccs.prl.galette.vitruvius.AutomaticVitruvMultiVarPathExplora
 
 set -x
 "$INSTRUMENTED_JAVA/bin/java" \
+  -Xms256m -Xmx2g \
   -cp "$CP" \
   -Xbootclasspath/a:"$GALETTE_AGENT" \
   -javaagent:"$GALETTE_AGENT" \

@@ -41,26 +41,27 @@ public class GaletteTransformer {
      */
     private static final String ANNOTATION_DESC = Type.getDescriptor(GaletteInstrumented.class);
     /**
-     * WHITELIST MODE: Classes that SHOULD be instrumented (when USE_AS_WHITELIST = true)
-     * BLACKLIST MODE: Classes that should NOT be instrumented (when USE_AS_WHITELIST = false)
+     * Classes that should not be instrumented.
      * <p>
      * Non-null.
      */
-    private static final boolean USE_AS_WHITELIST = true; // Set to true for whitelist mode
-
-    private static final ExclusionList filter = new ExclusionList(
-            // APPLICATION LAYER ONLY: Only instrument application-specific classes
-            // This avoids ALL boundary issues with JVM and framework classes
-            "mir/reactions/", // Reactions that generate constraints
-            "mir/routines/" // Routines called by reactions
-            // NOTE: Removed test harness - it directly uses Galette APIs and would need Thread fields
-            );
-
-    // Keep a minimal exclusion list for problematic JVM classes even in whitelist mode
-    private static final ExclusionList alwaysExclude = new ExclusionList(
-            INTERNAL_PACKAGE_PREFIX, // Always exclude Galette internals
-            "edu/neu/ccs/prl/galette/internal/" // Prevent recursion in Galette classes
-            );
+    private static final ExclusionList exclusions = new ExclusionList(
+            // ABSOLUTE MINIMAL exclusions - as in working reference implementation
+            "java/lang/Object",
+            INTERNAL_PACKAGE_PREFIX,
+            // Exclude concolic exploration framework
+            "edu/neu/ccs/prl/galette/concolic/",
+            // Exclude Green solver framework
+            "za/ac/sun/cs/green/",
+            "edu/gmu/swe/",
+            // Minimal JVM exclusions to prevent String.hashCode recursion
+            "java/lang/String",
+            "java/lang/StringBuilder",
+            "java/lang/StringBuffer",
+            "java/lang/AbstractStringBuilder",
+            // HashMap to prevent hashCode loops
+            "java/util/HashMap",
+            "java/util/AbstractMap");
 
     private static TransformationCache cache;
 
@@ -69,24 +70,9 @@ public class GaletteTransformer {
         String className = cr.getClassName();
         TransformationCache currentCache = getCache();
 
-        // Always exclude certain problematic classes
-        if (alwaysExclude.isExcluded(className) || AsmUtil.isSet(cr.getAccess(), Opcodes.ACC_MODULE)) {
+        if (exclusions.isExcluded(className) || AsmUtil.isSet(cr.getAccess(), Opcodes.ACC_MODULE)) {
+            // Skip excluded classes and module info
             return null;
-        }
-
-        // Apply whitelist or blacklist logic
-        boolean shouldInstrument = USE_AS_WHITELIST
-                ? filter.isExcluded(className)
-                : // In whitelist mode: instrument if matches prefix (using isExcluded as "isIncluded")
-                !filter.isExcluded(className); // In blacklist mode: instrument if NOT in list
-
-        if (!shouldInstrument) {
-            return null;
-        }
-
-        // Debug logging for whitelist mode
-        if (USE_AS_WHITELIST && (className.startsWith("mir/") || className.contains("Test"))) {
-            System.out.println("🎯 WHITELIST: Instrumenting class: " + className);
         }
         try {
             // Only cache dynamically instrumented files that are not synthetic
@@ -151,18 +137,11 @@ public class GaletteTransformer {
         ClassVisitor cv = hasFrames ? cw : new FrameRemover(cw);
 
         // Add comparison interception for bytecode-level constraint collection
-        // Enable for application classes (not internal Galette classes or Thread)
+        // Enable for application classes (not internal Galette classes)
         boolean interceptorEnabled = Boolean.getBoolean("galette.concolic.interception.enabled")
                 || !cn.name.startsWith("edu/neu/ccs/prl/galette/internal/");
 
-        // Never add comparison interception to Thread even if it's in the whitelist
-        boolean isThread = "java/lang/Thread".equals(cn.name);
-
-        if (interceptorEnabled && !cn.name.startsWith("edu/neu/ccs/prl/galette/internal/") && !isThread) {
-            // Debug: Log when we add the interceptor
-            if (cn.name.contains("BytecodeInterceptionTest") || cn.name.startsWith("mir/")) {
-                System.out.println("🎯 Adding ComparisonInterceptorVisitor to: " + cn.name);
-            }
+        if (interceptorEnabled && !cn.name.startsWith("edu/neu/ccs/prl/galette/internal/")) {
             cv = new ComparisonInterceptorVisitor(cv);
         }
 
@@ -227,19 +206,7 @@ public class GaletteTransformer {
     }
 
     public static boolean isExcluded(String className) {
-        // Always exclude internal Galette classes
-        if (alwaysExclude.isExcluded(className)) {
-            return true;
-        }
-
-        // Apply whitelist or blacklist logic
-        if (USE_AS_WHITELIST) {
-            // In whitelist mode: exclude if NOT in list
-            return !filter.isExcluded(className);
-        } else {
-            // In blacklist mode: exclude if in list
-            return filter.isExcluded(className);
-        }
+        return exclusions.isExcluded(className);
     }
 
     public static synchronized void setCache(TransformationCache cache) {

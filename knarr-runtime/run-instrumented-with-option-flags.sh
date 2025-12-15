@@ -391,6 +391,11 @@ mkdir -p target/galette/cache
 
 MAIN_CLASS="edu.neu.ccs.prl.galette.vitruvius.AutomaticVitruvMultiVarPathExploration"
 
+# Create log file with timestamp
+LOG_FILE="target/galette-execution-$(date +%Y%m%d-%H%M%S).log"
+echo "📝 Logging execution to: $LOG_FILE"
+echo "📝 Starting execution at $(date)" | tee "$LOG_FILE"
+
 set -x
 "$INSTRUMENTED_JAVA/bin/java" \
   -Xms256m -Xmx2g \
@@ -407,4 +412,7 @@ set -x
   -DDEBUG=true \
   -Dpath.explorer.debug=true \
   -Dconstraint.solver.debug=true \
-  "$MAIN_CLASS" "$@"
+  "$MAIN_CLASS" "$@" 2>&1 | tee -a "$LOG_FILE"
+
+EXIT_CODE=${PIPESTATUS[0]}
+echo "📝 Execution ended at $(date) with exit code: $EXIT_CODE" | tee -a "$LOG_FILE"

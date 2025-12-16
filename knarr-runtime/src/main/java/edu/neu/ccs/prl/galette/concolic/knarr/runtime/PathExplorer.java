@@ -60,6 +60,17 @@ public class PathExplorer {
     // to enable proper backtracking
     private final List<List<Expression>> negationsPerVariable = new ArrayList<>();
 
+    // ThreadLocal to pass variable name -> Tag mapping to executor
+    private static final ThreadLocal<Map<String, Tag>> currentVarToTag = ThreadLocal.withInitial(HashMap::new);
+
+    /**
+     * Get the Tag for a given variable name in the current execution context.
+     * This is used by executors to retrieve tags without relying on value-based lookup.
+     */
+    public static Tag getTagForVariable(String varName) {
+        return currentVarToTag.get().get(varName);
+    }
+
     public List<PathRecord> exploreInteger(String variableName, int initialValue, PathExecutor executor) {
         exploredPaths.clear();
         exploredConstraintSignatures.clear();
@@ -82,6 +93,11 @@ public class PathExplorer {
             String label = variableName + "_" + iteration;
             Tag symbolicTag = GaletteSymbolicator.makeSymbolicInt(label, currentInput);
             int taggedValue = Tainter.setTag(currentInput, symbolicTag);
+
+            // Store in ThreadLocal for executor to access (single variable case)
+            Map<String, Tag> varToTag = new HashMap<>();
+            varToTag.put(variableName, symbolicTag);
+            currentVarToTag.set(varToTag);
 
             // Execute and collect constraints
             long startTime = System.currentTimeMillis();
@@ -275,14 +291,30 @@ public class PathExplorer {
 
             // Create symbolic values for ALL variables
             Map<String, Object> taggedInputs = new HashMap<>();
+            Map<String, Tag> varToTag = new HashMap<>();
+
             for (String varName : variableNames) {
                 Integer value = currentInputs.get(varName);
                 // Keep variable label stable across iterations so solver can enumerate combinations deterministically
                 String label = varName;
                 Tag symbolicTag = GaletteSymbolicator.makeSymbolicInt(label, value);
                 int taggedValue = Tainter.setTag(value, symbolicTag);
-                taggedInputs.put(varName, taggedValue);
+
+                // Use Integer.valueOf to preserve tag during boxing
+                Integer taggedInteger = Integer.valueOf(taggedValue);
+
+                // Store mapping for this variable
+                varToTag.put(varName, symbolicTag);
+                taggedInputs.put(varName, taggedInteger);
+
+                if (DEBUG) {
+                    System.out.println("[PathExplorer] Created symbolic value for " + varName + ": label=" + label
+                            + ", value=" + value + ", tag=" + symbolicTag);
+                }
             }
+
+            // Store in ThreadLocal for executor to access
+            currentVarToTag.set(varToTag);
 
             // Execute and collect constraints
             long startTime = System.currentTimeMillis();

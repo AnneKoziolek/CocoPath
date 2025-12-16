@@ -6,6 +6,6 @@
   </model2:ComponentContainer>
   <model:AscetModule>
     <tasks xsi:type="model:InterruptTask" name="task1"/>
-    <tasks xsi:type="model:PeriodicTask" name="task2"/>
+    <tasks xsi:type="model:PeriodicTask" name="task2" period="1.0" delay="0.1"/>
   </model:AscetModule>
 </xmi:XMI>

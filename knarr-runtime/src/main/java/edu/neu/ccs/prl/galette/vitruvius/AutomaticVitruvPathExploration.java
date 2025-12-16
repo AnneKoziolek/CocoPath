@@ -76,19 +76,47 @@ public class AutomaticVitruvPathExploration {
             Object testInstance, Object input) {
 
         // NEW: Try to read tag from input to get variable name and expression dynamically
+        // First try Tainter.getTag (works with javaagent)
         Tag tag = Tainter.getTag(input);
+
+        // Fallback 1: try PathExplorer.getTagForVariable (works without javaagent, uses ThreadLocal)
+        if (tag == null) {
+            tag = PathExplorer.getTagForVariable("user_choice");
+        }
+
+        // Fallback 2: try GaletteSymbolicator.getTagForValue
+        if (tag == null) {
+            tag = GaletteSymbolicator.getTagForValue(input);
+        }
+
         String varName;
         Expression symbolicExpr = null;
 
         if (tag != null && tag.size() > 0) {
             // Tag-aware mode: extract variable name and expression from tag
             Object[] labels = tag.getLabels();
-            varName = labels[0].toString();
+            String label = labels[0].toString();
+
+            // Extract variable name from label (remove _N suffix)
+            // Label format: "user_choice_0" -> extract "user_choice"
+            if (label.contains("_")) {
+                int lastUnderscore = label.lastIndexOf("_");
+                // Check if the part after underscore is a number
+                String suffix = label.substring(lastUnderscore + 1);
+                try {
+                    Integer.parseInt(suffix);
+                    varName = label.substring(0, lastUnderscore);
+                } catch (NumberFormatException e) {
+                    varName = label;
+                }
+            } else {
+                varName = label;
+            }
 
             // Get the symbolic expression associated with this tag
             symbolicExpr = GaletteSymbolicator.getExpressionForTag(tag);
 
-            System.out.println("✓ Tag detected: variable name = \"" + varName + "\"");
+            System.out.println("✓ Tag detected: label = \"" + label + "\", variable name = \"" + varName + "\"");
             if (symbolicExpr != null) {
                 System.out.println("  Symbolic expression: " + symbolicExpr);
             }

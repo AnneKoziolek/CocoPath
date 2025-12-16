@@ -52,7 +52,7 @@ public class AutomaticVitruvMultiVarPathExploration {
 
             List<PathExplorer.PathRecord> paths =
                     explorer.exploreMultipleIntegers(variableNames, initialValues, inputs -> {
-                        return executeVitruvWithTwoInputs(testInstance, inputs);
+                        return executeVitruvWithTwoInputs(testInstance, inputs, variableNames);
                     });
 
             // Display results
@@ -89,22 +89,42 @@ public class AutomaticVitruvMultiVarPathExploration {
      *
      * @param testInstance Instance of Test class
      * @param inputs Map containing user_choice_1 and user_choice_2
+     * @param variableNames List of variable names (for constraint generation)
      * @return Path condition with all collected constraints
      */
-    private static PathConditionWrapper executeVitruvWithTwoInputs(Object testInstance, Map<String, Object> inputs) {
+    private static PathConditionWrapper executeVitruvWithTwoInputs(
+            Object testInstance, Map<String, Object> inputs, List<String> variableNames) {
         // Get the TAGGED values (preserve symbolic tags for constraint collection)
-        Integer taggedInput1 = (Integer) inputs.get("user_choice_1");
-        Integer taggedInput2 = (Integer) inputs.get("user_choice_2");
+        Integer taggedInput1 = (Integer) inputs.get(variableNames.get(0));
+        Integer taggedInput2 = (Integer) inputs.get(variableNames.get(1));
 
         if (taggedInput1 == null) taggedInput1 = 0;
         if (taggedInput2 == null) taggedInput2 = 0;
 
         // NEW: Try to read tags from inputs to get variable names and expressions dynamically
+        // First try Tainter.getTag (works with javaagent)
         Tag tag1 = Tainter.getTag(taggedInput1);
         Tag tag2 = Tainter.getTag(taggedInput2);
 
-        String varName1 = "";
-        String varName2 = "";
+        // Fallback 1: try PathExplorer.getTagForVariable (works without javaagent, uses ThreadLocal)
+        if (tag1 == null && variableNames.size() > 0) {
+            tag1 = PathExplorer.getTagForVariable(variableNames.get(0));
+        }
+        if (tag2 == null && variableNames.size() > 1) {
+            tag2 = PathExplorer.getTagForVariable(variableNames.get(1));
+        }
+
+        // Fallback 2: try GaletteSymbolicator.getTagForValue (may not work with duplicate values)
+        if (tag1 == null) {
+            tag1 = GaletteSymbolicator.getTagForValue(taggedInput1);
+        }
+        if (tag2 == null) {
+            tag2 = GaletteSymbolicator.getTagForValue(taggedInput2);
+        }
+
+        // Use variable names from parameter, falling back to defaults if not provided
+        String varName1 = variableNames.size() > 0 ? variableNames.get(0) : "default1";
+        String varName2 = variableNames.size() > 1 ? variableNames.get(1) : "default2";
         Expression symbolicExpr1 = null;
         Expression symbolicExpr2 = null;
 
@@ -114,28 +134,47 @@ public class AutomaticVitruvMultiVarPathExploration {
         if (tag1 != null && tag1.size() > 0) {
             // Tag-aware mode: extract variable name and expression from tag
             Object[] labels1 = tag1.getLabels();
-            varName1 = labels1[0].toString();
+            String label1 = labels1[0].toString();
+
+            // Extract variable name from label (remove _iterN suffix)
+            // Label format: "user_choice_1_iter0" -> extract "user_choice_1"
+            if (label1.contains("_iter")) {
+                varName1 = label1.substring(0, label1.lastIndexOf("_iter"));
+            } else {
+                varName1 = label1;
+            }
 
             // Get the symbolic expression associated with this tag
             symbolicExpr1 = GaletteSymbolicator.getExpressionForTag(tag1);
 
-            System.out.println("✓ Tag detected for input 1: variable name = \"" + varName1 + "\"");
+            System.out.println(
+                    "✓ Tag detected for input 1: label = \"" + label1 + "\", variable name = \"" + varName1 + "\"");
             if (symbolicExpr1 != null) {
                 System.out.println("  Symbolic expression: " + symbolicExpr1);
             }
         } else {
+
             System.out.println("No tag found for input 1");
         }
 
         if (tag2 != null && tag2.size() > 0) {
             // Tag-aware mode: extract variable name and expression from tag
             Object[] labels2 = tag2.getLabels();
-            varName2 = labels2[0].toString();
+            String label2 = labels2[0].toString();
+
+            // Extract variable name from label (remove _iterN suffix)
+            // Label format: "user_choice_2_iter0" -> extract "user_choice_2"
+            if (label2.contains("_iter")) {
+                varName2 = label2.substring(0, label2.lastIndexOf("_iter"));
+            } else {
+                varName2 = label2;
+            }
 
             // Get the symbolic expression associated with this tag
             symbolicExpr2 = GaletteSymbolicator.getExpressionForTag(tag2);
 
-            System.out.println("✓ Tag detected for input 2: variable name = \"" + varName2 + "\"");
+            System.out.println(
+                    "✓ Tag detected for input 2: label = \"" + label2 + "\", variable name = \"" + varName2 + "\"");
             if (symbolicExpr2 != null) {
                 System.out.println("  Symbolic expression: " + symbolicExpr2);
             }
@@ -162,8 +201,16 @@ public class AutomaticVitruvMultiVarPathExploration {
         // Reset path condition
         PathUtils.resetPC();
 
-        // Constraints are now automatically recorded by the reactions through SymbolicComparison
-        // No need to manually add them here anymore
+        // Step 1: Add domain constraints for BOTH variables
+
+        PathUtils.addIntDomainConstraint(varName1, 0, 5);
+        PathUtils.addIntDomainConstraint(varName2, 0, 5);
+
+        // Step 2: Record path constraints for BOTH variables
+
+        PathUtils.addSwitchConstraint(varName1, taggedInput1);
+        PathUtils.addSwitchConstraint(varName2, taggedInput2);
+
         if (DEBUG) {
             System.out.println("[Execute] Constraints will be recorded by reactions via SymbolicComparison");
         }

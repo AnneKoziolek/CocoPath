@@ -43,13 +43,13 @@ public class CreateAscetTaskRoutine extends AbstractRoutine {
             InputOutput.<String>println(("  - Container: " + container));
             final String userMsg =
                     "A Task has been created. Please decide whether and which corresponding ASCET Task should be created.";
-            final String interruptTaskOption = "Create InterruptTask";
+            final String initTaskOption = "Create InitTask";
             final String periodicTaskOption = "Create PeriodicTask";
             final String softwareTaskOption = "Create SoftwareTask";
             final String timeTableTaskOption = "Create TimeTableTask";
             final String doNothingOption = "Decide Later";
             final String[] options = {
-                interruptTaskOption, periodicTaskOption, softwareTaskOption, timeTableTaskOption, doNothingOption
+                initTaskOption, periodicTaskOption, softwareTaskOption, timeTableTaskOption, doNothingOption
             };
             InputOutput.<String>println("[Reaction] About to call userInteractor.startInteraction()...");
             final Integer selected = this.executionState
@@ -112,7 +112,7 @@ public class CreateAscetTaskRoutine extends AbstractRoutine {
             if (symbolicSelected != null) {
                 switch (symbolicSelected) {
                     case 0:
-                        _routinesFacade.createInterruptTask(task, container);
+                        _routinesFacade.createInitTask(task, container);
                         break;
                     case 1:
                         _routinesFacade.createPeriodicTask(task, container);

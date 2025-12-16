@@ -115,7 +115,7 @@ routine createAscetTask(amalthea::Task task, amalthea::ComponentContainer contai
 
         switch (symbolicSelected) {
             case 0: {
-                createInterruptTask(task,container)
+                createInitTask(task,container)               
             }
             case 1: {
                 createPeriodicTask(task,container)
@@ -134,20 +134,20 @@ routine createAscetTask(amalthea::Task task, amalthea::ComponentContainer contai
 	}
 }
 
-routine createInterruptTask(amalthea::Task task, amalthea::ComponentContainer container){
+routine createInitTask(amalthea::Task task, amalthea::ComponentContainer container){
 	
 	match {
 		val AscetModule = retrieve ascet::AscetModule corresponding to container
-		require absence of ascet::InterruptTask corresponding to task
+		require absence of ascet::InitTask corresponding to task
 		 
 	}
 	create {
-		val interruptTask = new ascet::InterruptTask
+		val initTask = new ascet::InitTask
 	}
 	update {
-		AscetModule.tasks += interruptTask
-		interruptTask.name = task.name
-		addCorrespondenceBetween(interruptTask, container)
+		AscetModule.tasks += initTask
+		initTask.name = task.name
+		addCorrespondenceBetween(initTask, container)
 		
 	}
 }
@@ -165,6 +165,8 @@ routine createPeriodicTask(amalthea::Task task, amalthea::ComponentContainer con
 	update {
 		AscetModule.tasks += periodicTask
 		periodicTask.name = task.name
+		periodicTask.delay = 0.10
+		periodicTask.period = 1.0
 		addCorrespondenceBetween(periodicTask, container)
 		
 	}

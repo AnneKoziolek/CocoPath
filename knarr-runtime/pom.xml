@@ -66,10 +66,12 @@
         <!-- Option 2 (CURRENT): Use external Amathea-acset repository (FULL VITRUVIUS) -->
         <!-- This provides complete Vitruvius reactions and transformations -->
         <!--        <dependency>
+        <!--        <dependency>
             <groupId>tools.vitruv</groupId>
             <artifactId>tools.vitruv.methodologisttemplate.vsum</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
+        -->
         -->
 
         <!-- Vitruvius framework dependencies (required for either option) -->
@@ -170,6 +172,23 @@
                     <!-- mainClass removed - now specified via -Dexec.mainClass on command line -->
                     <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>run-with-agent</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-javaagent:${settings.localRepository}/edu/neu/ccs/prl/galette/galette-agent/1.0.0-SNAPSHOT/galette-agent-1.0.0-SNAPSHOT.jar</argument>
+                                <argument>-classpath</argument>
+                                <classpath/>
+                                <argument>${exec.mainClass}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

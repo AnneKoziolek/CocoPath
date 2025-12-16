@@ -8,17 +8,17 @@ import tools.vitruv.dsls.reactions.runtime.routines.AbstractRoutine;
 import tools.vitruv.dsls.reactions.runtime.state.ReactionExecutionState;
 import tools.vitruv.dsls.reactions.runtime.structure.CallHierarchyHaving;
 import tools.vitruv.methodologisttemplate.model.model.AscetModule;
-import tools.vitruv.methodologisttemplate.model.model.InterruptTask;
+import tools.vitruv.methodologisttemplate.model.model.InitTask;
 import tools.vitruv.methodologisttemplate.model.model2.ComponentContainer;
 import tools.vitruv.methodologisttemplate.model.model2.Task;
 
 @SuppressWarnings("all")
-public class CreateInterruptTaskRoutine extends AbstractRoutine {
-    private CreateInterruptTaskRoutine.InputValues inputValues;
+public class CreateInitTaskRoutine extends AbstractRoutine {
+    private CreateInitTaskRoutine.InputValues inputValues;
 
-    private CreateInterruptTaskRoutine.Match.RetrievedValues retrievedValues;
+    private CreateInitTaskRoutine.Match.RetrievedValues retrievedValues;
 
-    private CreateInterruptTaskRoutine.Create.CreatedValues createdValues;
+    private CreateInitTaskRoutine.Create.CreatedValues createdValues;
 
     public class InputValues {
         public final Task task;
@@ -53,8 +53,8 @@ public class CreateInterruptTaskRoutine extends AbstractRoutine {
             return task;
         }
 
-        public CreateInterruptTaskRoutine.Match.RetrievedValues match(
-                final Task task, final ComponentContainer container) throws IOException {
+        public CreateInitTaskRoutine.Match.RetrievedValues match(final Task task, final ComponentContainer container)
+                throws IOException {
             tools.vitruv.methodologisttemplate.model.model.AscetModule AscetModule = getCorrespondingElement(
                     getCorrepondenceSourceAscetModule(task, container), // correspondence source supplier
                     tools.vitruv.methodologisttemplate.model.model.AscetModule.class,
@@ -67,21 +67,21 @@ public class CreateInterruptTaskRoutine extends AbstractRoutine {
             }
             if (hasCorrespondingElements(
                     getCorrepondenceSource1(task, container, AscetModule), // correspondence source supplier
-                    tools.vitruv.methodologisttemplate.model.model.InterruptTask.class,
+                    tools.vitruv.methodologisttemplate.model.model.InitTask.class,
                     null, // correspondence precondition checker
                     null)) {
                 return null;
             }
-            return new mir.routines.amalthea2ascet.CreateInterruptTaskRoutine.Match.RetrievedValues(AscetModule);
+            return new mir.routines.amalthea2ascet.CreateInitTaskRoutine.Match.RetrievedValues(AscetModule);
         }
     }
 
     private static class Create extends AbstractRoutine.Create {
         public class CreatedValues {
-            public final InterruptTask interruptTask;
+            public final InitTask initTask;
 
-            public CreatedValues(final InterruptTask interruptTask) {
-                this.interruptTask = interruptTask;
+            public CreatedValues(final InitTask initTask) {
+                this.initTask = initTask;
             }
         }
 
@@ -89,12 +89,11 @@ public class CreateInterruptTaskRoutine extends AbstractRoutine {
             super(reactionExecutionState);
         }
 
-        public CreateInterruptTaskRoutine.Create.CreatedValues createElements() {
-            tools.vitruv.methodologisttemplate.model.model.InterruptTask interruptTask = createObject(() -> {
-                return tools.vitruv.methodologisttemplate.model.model.impl.ModelFactoryImpl.eINSTANCE
-                        .createInterruptTask();
+        public CreateInitTaskRoutine.Create.CreatedValues createElements() {
+            tools.vitruv.methodologisttemplate.model.model.InitTask initTask = createObject(() -> {
+                return tools.vitruv.methodologisttemplate.model.model.impl.ModelFactoryImpl.eINSTANCE.createInitTask();
             });
-            return new CreateInterruptTaskRoutine.Create.CreatedValues(interruptTask);
+            return new CreateInitTaskRoutine.Create.CreatedValues(initTask);
         }
     }
 
@@ -107,44 +106,44 @@ public class CreateInterruptTaskRoutine extends AbstractRoutine {
                 final Task task,
                 final ComponentContainer container,
                 final AscetModule AscetModule,
-                final InterruptTask interruptTask,
+                final InitTask initTask,
                 @Extension final Amalthea2ascetRoutinesFacade _routinesFacade) {
             EList<tools.vitruv.methodologisttemplate.model.model.Task> _tasks = AscetModule.getTasks();
-            _tasks.add(interruptTask);
-            interruptTask.setName(task.getName());
-            this.addCorrespondenceBetween(interruptTask, container);
+            _tasks.add(initTask);
+            initTask.setName(task.getName());
+            this.addCorrespondenceBetween(initTask, container);
         }
     }
 
-    public CreateInterruptTaskRoutine(
+    public CreateInitTaskRoutine(
             final Amalthea2ascetRoutinesFacade routinesFacade,
             final ReactionExecutionState reactionExecutionState,
             final CallHierarchyHaving calledBy,
             final Task task,
             final ComponentContainer container) {
         super(routinesFacade, reactionExecutionState, calledBy);
-        this.inputValues = new CreateInterruptTaskRoutine.InputValues(task, container);
+        this.inputValues = new CreateInitTaskRoutine.InputValues(task, container);
     }
 
     protected boolean executeRoutine() throws IOException {
         if (getLogger().isTraceEnabled()) {
-            getLogger().trace("Called routine CreateInterruptTaskRoutine with input:");
+            getLogger().trace("Called routine CreateInitTaskRoutine with input:");
             getLogger().trace("   inputValues.task: " + inputValues.task);
             getLogger().trace("   inputValues.container: " + inputValues.container);
         }
-        retrievedValues = new mir.routines.amalthea2ascet.CreateInterruptTaskRoutine.Match(getExecutionState())
+        retrievedValues = new mir.routines.amalthea2ascet.CreateInitTaskRoutine.Match(getExecutionState())
                 .match(inputValues.task, inputValues.container);
         if (retrievedValues == null) {
             return false;
         }
         createdValues =
-                new mir.routines.amalthea2ascet.CreateInterruptTaskRoutine.Create(getExecutionState()).createElements();
-        new mir.routines.amalthea2ascet.CreateInterruptTaskRoutine.Update(getExecutionState())
+                new mir.routines.amalthea2ascet.CreateInitTaskRoutine.Create(getExecutionState()).createElements();
+        new mir.routines.amalthea2ascet.CreateInitTaskRoutine.Update(getExecutionState())
                 .updateModels(
                         inputValues.task,
                         inputValues.container,
                         retrievedValues.AscetModule,
-                        createdValues.interruptTask,
+                        createdValues.initTask,
                         getRoutinesFacade());
         return true;
     }

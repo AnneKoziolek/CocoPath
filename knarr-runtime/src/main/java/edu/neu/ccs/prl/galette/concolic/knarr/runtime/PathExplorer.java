@@ -71,8 +71,8 @@ public class PathExplorer {
         return currentVarToTag.get().get(varName);
     }
 
-    public List<PathRecord> exploreInteger(String variableName, int initialValue, PathExecutor executor) {
-        return exploreInteger(variableName, initialValue, executor, null);
+    public List<PathRecord> exploreInteger(int initialValue, PathExecutor executor) {
+        return exploreInteger(initialValue, executor, null);
     }
 
     /**
@@ -84,8 +84,7 @@ public class PathExplorer {
      * @param qualifiedName The qualified name to use for symbolic execution (e.g., "CreateAscetTaskRoutine:execute:userChoice")
      * @return List of explored paths
      */
-    public List<PathRecord> exploreInteger(
-            String variableName, int initialValue, PathExecutor executor, String qualifiedName) {
+    public List<PathRecord> exploreInteger(int initialValue, PathExecutor executor, String qualifiedName) {
         exploredPaths.clear();
         exploredConstraintSignatures.clear();
         negatedSwitchConstraints.clear();
@@ -96,7 +95,8 @@ public class PathExplorer {
 
         while (currentInput != null && iteration < MAX_ITERATIONS) {
             if (DEBUG) {
-                System.out.println("Iteration " + (iteration + 1) + ": " + variableName + " = " + currentInput);
+                System.out.println("[PathExplorer:exploreInteger] Iteration " + (iteration + 1) + ": " + qualifiedName
+                        + " = " + currentInput);
             }
 
             // Reset path condition but NOT the symbolicator
@@ -109,8 +109,11 @@ public class PathExplorer {
             PathConditionWrapper pc = executor.execute(currentInput);
             long endTime = System.currentTimeMillis();
 
+            String variableName = extractTagFromValue(currentInput);
+
             if (pc == null || pc.isEmpty()) {
-                if (DEBUG) System.out.println("No constraints collected - concrete execution");
+                if (DEBUG)
+                    System.out.println("[PathExplorer:exploreInteger] No constraints collected - concrete execution");
                 Map<String, Object> inputs = new HashMap<>();
                 inputs.put(variableName, currentInput);
                 exploredPaths.add(new PathRecord(iteration, inputs, new ArrayList<>(), endTime - startTime));
@@ -123,15 +126,15 @@ public class PathExplorer {
             String constraintSignature = buildConstraintSignature(constraints);
 
             if (DEBUG) {
-                System.out.println("Collected " + constraints.size() + " constraints");
+                System.out.println("[PathExplorer:exploreInteger] Collected " + constraints.size() + " constraints");
                 for (Expression expr : constraints) {
                     System.out.println("  - " + expr.toString());
                 }
-                System.out.println("Execution time: " + (endTime - startTime) + " ms");
+                System.out.println("[PathExplorer:exploreInteger] Execution time: " + (endTime - startTime) + " ms");
             }
 
             if (exploredConstraintSignatures.contains(constraintSignature)) {
-                if (DEBUG) System.out.println("Path already explored");
+                if (DEBUG) System.out.println("[PathExplorer:exploreInteger] Path already explored");
                 break;
             }
 
@@ -143,13 +146,15 @@ public class PathExplorer {
             // Extract domain and switch constraints
             if (iteration == 0 && constraints.size() >= 1) {
                 domainConstraint = constraints.get(0); // First constraint is domain
-                if (DEBUG) System.out.println("Domain constraint: " + domainConstraint);
+                if (DEBUG) System.out.println("[PathExplorer:exploreInteger]Domain constraint: " + domainConstraint);
             }
 
             currentInput = generateNextInput(constraints, variableName);
 
             if (currentInput == null) {
-                if (DEBUG) System.out.println("No more satisfiable inputs - terminating exploration");
+                if (DEBUG)
+                    System.out.println(
+                            "[PathExplorer:exploreInteger] No more satisfiable inputs - terminating exploration");
                 break;
             }
 
@@ -157,7 +162,7 @@ public class PathExplorer {
         }
 
         if (iteration >= MAX_ITERATIONS && DEBUG) {
-            System.out.println("Reached max iterations: " + MAX_ITERATIONS);
+            System.out.println("[PathExplorer:exploreInteger] Reached max iterations: " + MAX_ITERATIONS);
         }
 
         // Clean up: reset symbolicator state after exploration completes
@@ -179,7 +184,8 @@ public class PathExplorer {
         negatedSwitchConstraints.add(negatedSwitch);
 
         if (DEBUG) {
-            System.out.println("Negating switch constraint: " + switchConstraint + " -> " + negatedSwitch);
+            System.out.println("[PathExplorer:generateNextInput] Negating switch constraint: " + switchConstraint
+                    + " -> " + negatedSwitch);
         }
 
         // Build combined constraint: domain AND not_switch1 AND not_switch2 AND ... AND not_switchN
@@ -194,14 +200,16 @@ public class PathExplorer {
         }
 
         if (DEBUG) {
-            System.out.println("Combined constraint for solver: " + combinedConstraint);
+            System.out.println(
+                    "[PathExplorer:generateNextInput] Combined constraint for solver: " + combinedConstraint);
         }
 
         // Solve the combined constraint
         InputSolution solution = ConstraintSolver.solveConstraint(combinedConstraint);
 
         if (solution == null || !solution.isSatisfiable()) {
-            if (DEBUG) System.out.println("UNSAT - no more inputs satisfy the constraints");
+            if (DEBUG)
+                System.out.println("[PathExplorer:generateNextInput] UNSAT - no more inputs satisfy the constraints");
             return null;
         }
 
@@ -213,7 +221,9 @@ public class PathExplorer {
         for (String key : solution.getLabels()) {
             value = solution.getValue(key);
             if (value != null) {
-                if (DEBUG) System.out.println("Found value under key: " + key + " = " + value);
+                if (DEBUG)
+                    System.out.println(
+                            "[PathExplorer:generateNextInput] Found value under key: " + key + " = " + value);
                 break;
             }
         }
@@ -221,20 +231,23 @@ public class PathExplorer {
         // If still no value, something went wrong
         if (value == null) {
             if (DEBUG) {
-                System.out.println("Warning: No value found in solution. Available keys: " + solution.getLabels());
+                System.out.println(
+                        "[PathExplorer:generateNextInput]Warning: No value found in solution. Available keys: "
+                                + solution.getLabels());
             }
         }
 
         if (value instanceof Integer) {
-            if (DEBUG) System.out.println("Next input from solver: " + value);
+            if (DEBUG) System.out.println("[PathExplorer:generateNextInput] Next input from solver: " + value);
             return (Integer) value;
         } else if (value instanceof Number) {
             int intVal = ((Number) value).intValue();
-            if (DEBUG) System.out.println("Next input from solver (converted): " + intVal);
+            if (DEBUG)
+                System.out.println("[PathExplorer:generateNextInput] Next input from solver (converted): " + intVal);
             return intVal;
         }
 
-        if (DEBUG) System.out.println("Could not extract integer value from solution");
+        if (DEBUG) System.out.println("[PathExplorer:generateNextInput] Could not extract integer value from solution");
         return null;
     }
 
@@ -279,7 +292,8 @@ public class PathExplorer {
             String qualifiedName) {
 
         if (variableNames.size() != initialValues.size()) {
-            throw new IllegalArgumentException("Variable names and initial values must have the same size");
+            throw new IllegalArgumentException(
+                    "[PathExplorer:exploreMultipleIntegers] Variable names and initial values must have the same size");
         }
 
         exploredPaths.clear();
@@ -303,7 +317,8 @@ public class PathExplorer {
 
         while (currentInputs != null && iteration < MAX_ITERATIONS) {
             if (DEBUG) {
-                System.out.println("\n=== Iteration " + (iteration + 1) + " ===");
+                System.out.println(
+                        "\n [PathExplorer:exploreMultipleIntegers] === Iteration " + (iteration + 1) + " ===");
                 for (String varName : variableNames) {
                     System.out.println("  " + varName + " = " + currentInputs.get(varName));
                 }
@@ -332,8 +347,8 @@ public class PathExplorer {
                 taggedInputs.put(varName, taggedInteger);
 
                 if (DEBUG) {
-                    System.out.println("[PathExplorer] Created symbolic value for " + varName + ": label=" + label
-                            + ", value=" + value + ", tag=" + symbolicTag);
+                    System.out.println("[PathExplorer:exploreMultipleIntegers] Created symbolic value for " + varName
+                            + ": label=" + label + ", value=" + value + ", tag=" + symbolicTag);
                 }
             }
 
@@ -626,5 +641,33 @@ public class PathExplorer {
 
         next.put(firstVar, val + 1);
         return next;
+    }
+
+    /**
+     * This may not be needed at all, as in Anne's run this did not find a tag but the exploration worked anyway.
+     * @param selected
+     * @return
+     */
+    private String extractTagFromValue(Integer selected) {
+        // Check if the value has a tag
+        Tag tag = null;
+        try {
+            // Try to extract tag using Galette's Tainter
+            tag = edu.neu.ccs.prl.galette.internal.runtime.Tainter.getTag(selected);
+            if (tag != null && !tag.isEmpty()) {
+                System.out.println("[PathExplorer:extractTagFromValue]   - Tag found: " + tag);
+                System.out.println("[PathExplorer:extractTagFromValue]   - Tag labels: "
+                        + java.util.Arrays.toString(tag.getLabels()));
+
+                // Extract qualified name from tag label
+                String qualifiedName = tag.getLabels()[0].toString();
+                return qualifiedName;
+            } else {
+                System.out.println("[PathExplorer:extractTagFromValue]   - No tag found on value");
+            }
+        } catch (Exception e) {
+            System.out.println("[PathExplorer:extractTagFromValue]   - Error extracting tag: " + e.getMessage());
+        }
+        return null;
     }
 }

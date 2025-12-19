@@ -350,7 +350,7 @@ echo "      Done."
 echo ""
 
 echo "[$STEP2/$TOTAL_STEPS] Running symbolic execution..."
-echo "      With manual constraint collection via PathUtils API"
+echo "      With semi-automatic constraint collection in reaction"
 
 # Determine which main class to use
 if [ "$USE_MULTIVAR" = true ]; then
@@ -429,10 +429,6 @@ if [ "$USE_MULTIVAR" = true ]; then
     echo "Generated files:"
     echo "  - execution_paths_multivar.json       (Path exploration results)"
     echo "  - galette-output-multivar-*/          (Model outputs per path combination)"
-    echo ""
-    echo "Multi-variable exploration:"
-    echo "  - Variables: user_choice_1, user_choice_2"
-    echo "  - Expected paths: 5 × 5 = 25"
     echo ""
 else
     echo "Generated files:"

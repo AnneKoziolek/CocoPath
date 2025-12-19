@@ -48,7 +48,6 @@ public class AutomaticVitruvPathExploration {
         //
         final Object finalTestInstance = testInstance;
         List<PathExplorer.PathRecord> paths = explorer.exploreInteger(
-                "user_choice",
                 0, // Initial value to start exploration
                 input -> executeVitruvWithInput(finalTestInstance, input),
                 "CreateAscetTaskRoutine:execute:userChoice"); // Qualified name matching the reaction

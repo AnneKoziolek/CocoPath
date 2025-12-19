@@ -16,8 +16,8 @@ import za.ac.sun.cs.green.expr.Operation.Operator;
 public class PathExplorer {
 
     private static final boolean DEBUG = true; // Boolean.getBoolean("path.explorer.debug");
-    private static final int MAX_ITERATIONS = 6;
-    // Integer.getInteger("path.explorer.max.iterations", 30); // Reduced from 100 for debugging
+    private static final int MAX_ITERATIONS =
+            Integer.getInteger("path.explorer.max.iterations", 30); // Reduced from 100 for debugging
 
     public static class PathRecord {
         public final int pathId;
@@ -469,10 +469,19 @@ public class PathExplorer {
             return null;
         }
 
-        // Convert map back to list in same order as variableNames
+        // Since variableNames might be empty, we need to extract values based on the order
+        // they appear in the resultMap. The resultMap contains qualified names from constraints.
         List<Integer> resultList = new ArrayList<>();
-        for (String varName : variableNames) {
-            resultList.add(resultMap.get(varName));
+
+        // Sort the keys to ensure consistent ordering
+        List<String> sortedKeys = new ArrayList<>(resultMap.keySet());
+        Collections.sort(sortedKeys);
+
+        for (String key : sortedKeys) {
+            resultList.add(resultMap.get(key));
+            if (DEBUG) {
+                System.out.println("Adding to result list: " + key + " = " + resultMap.get(key));
+            }
         }
 
         return resultList;

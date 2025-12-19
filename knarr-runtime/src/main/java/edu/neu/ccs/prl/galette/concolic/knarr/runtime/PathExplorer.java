@@ -206,14 +206,22 @@ public class PathExplorer {
         }
 
         // Extract the value for our variable
-        Object value = solution.getValue(variableName);
+        // The solver uses the qualified name from the constraints, not the display name
+        Object value = null;
+
+        // Try all keys in the solution - the solver will have used the actual variable name from constraints
+        for (String key : solution.getLabels()) {
+            value = solution.getValue(key);
+            if (value != null) {
+                if (DEBUG) System.out.println("Found value under key: " + key + " = " + value);
+                break;
+            }
+        }
+
+        // If still no value, something went wrong
         if (value == null) {
-            for (String key : solution.getLabels()) {
-                if (key.startsWith(variableName) || key.equals("user_choice")) {
-                    value = solution.getValue(key);
-                    if (DEBUG) System.out.println("Found value under key: " + key);
-                    break;
-                }
+            if (DEBUG) {
+                System.out.println("Warning: No value found in solution. Available keys: " + solution.getLabels());
             }
         }
 

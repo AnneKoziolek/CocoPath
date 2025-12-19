@@ -8,6 +8,46 @@
       "(0<=CreateAscetTaskRoutine:execute:userChoice)&&(CreateAscetTaskRoutine:execute:userChoice<5)",
       "CreateAscetTaskRoutine:execute:userChoice==0"
     ],
-    "executionTime": 24267
+    "executionTime": 24579
+  },
+  {
+    "pathId": 2,
+    "symbolicInputs": {
+      "user_choice": 1
+    },
+    "constraints": [
+      "CreateAscetTaskRoutine:execute:userChoice==1"
+    ],
+    "executionTime": 223
+  },
+  {
+    "pathId": 3,
+    "symbolicInputs": {
+      "user_choice": 2
+    },
+    "constraints": [
+      "CreateAscetTaskRoutine:execute:userChoice==2"
+    ],
+    "executionTime": 199
+  },
+  {
+    "pathId": 4,
+    "symbolicInputs": {
+      "user_choice": 3
+    },
+    "constraints": [
+      "CreateAscetTaskRoutine:execute:userChoice==3"
+    ],
+    "executionTime": 238
+  },
+  {
+    "pathId": 5,
+    "symbolicInputs": {
+      "user_choice": 4
+    },
+    "constraints": [
+      "CreateAscetTaskRoutine:execute:userChoice==4"
+    ],
+    "executionTime": 92
   }
 ]

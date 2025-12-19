@@ -63,7 +63,8 @@ public class CreateAscetTaskRoutine extends AbstractRoutine {
             Integer symbolicSelected = selected;
             if ((selected != null)) {
                 try {
-                    final String qualifiedName = "CreateAscetTaskRoutine:execute:userChoice";
+                    String _name_1 = task.getName();
+                    final String qualifiedName = ("CreateAscetTaskRoutine:execute:userChoice_forTask_" + _name_1);
                     final Class<?> symbolicatorClass =
                             Class.forName("edu.neu.ccs.prl.galette.concolic.knarr.runtime.GaletteSymbolicator");
                     final Method getOrMakeMethod = symbolicatorClass.getMethod(

@@ -59,6 +59,11 @@
         <!-- This requires external Amalthea-acset to be built once for Vitruvius dependencies -->
         <dependency>
             <groupId>edu.neu.ccs.prl.galette</groupId>
+            <artifactId>amalthea-acset-consistency</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.neu.ccs.prl.galette</groupId>
             <artifactId>amalthea-acset-vsum</artifactId>
             <version>${project.version}</version>
         </dependency>

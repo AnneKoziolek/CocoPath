@@ -110,6 +110,19 @@ fi
 
 echo ""
 
+# Fix Java 8 compatibility issues
+echo "Fixing Java 8 compatibility issues..."
+CHANGE_SPEC_FILE="$TARGET_DIR/reactions/amalthea2ascet/Amalthea2ascetChangePropagationSpecification.java"
+if [ -f "$CHANGE_SPEC_FILE" ]; then
+    sed -i 's/import java.util.Set;/import java.util.Collections;/' "$CHANGE_SPEC_FILE"
+    sed -i 's/Set\.of/Collections.singleton/g' "$CHANGE_SPEC_FILE"
+    echo "  Fixed Set.of() -> Collections.singleton() in Amalthea2ascetChangePropagationSpecification.java"
+else
+    echo "  WARNING: ChangePropagationSpecification.java not found, skipping Java 8 fix"
+fi
+
+echo ""
+
 # Clean Maven repository to avoid stale JAR issues
 echo "Cleaning Maven repository cache..."
 # Remove internal consistency JAR from Maven repo

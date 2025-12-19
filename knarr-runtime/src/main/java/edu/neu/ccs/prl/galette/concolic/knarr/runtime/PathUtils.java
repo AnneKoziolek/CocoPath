@@ -279,10 +279,11 @@ public class PathUtils {
             getCurPC().addConstraint(domain);
 
             if (GaletteSymbolicator.DEBUG) {
-                System.out.println("[PathUtils] Added domain constraint: " + min + " <= " + varName + " < " + max);
+                System.out.println("[PathUtils:addIntDomainConstraint] Added domain constraint: " + min + " <= "
+                        + varName + " < " + max);
             }
         } catch (Exception e) {
-            System.err.println("[PathUtils] Failed to add domain constraint: " + e.getMessage());
+            System.err.println("[PathUtils:addIntDomainConstraint] Failed to add domain constraint: " + e.getMessage());
         }
     }
 

@@ -333,12 +333,10 @@ public class PathExplorer {
             for (int i = 0; i < currentInputsList.size(); i++) {
                 Integer value = currentInputsList.get(i);
                 String varName = extractTagFromValue(value);
-                if (varName == null) {
-                    // Fallback if no tag found
-                    varName = "var_" + i;
+                if (varName != null) {
+                    variableNames.add(varName);
+                    currentInputs.put(varName, value);
                 }
-                variableNames.add(varName);
-                currentInputs.put(varName, value);
             }
 
             if (DEBUG) {
@@ -349,7 +347,9 @@ public class PathExplorer {
             }
 
             if (pc == null || pc.isEmpty()) {
-                if (DEBUG) System.out.println("No constraints collected - concrete execution");
+                if (DEBUG)
+                    System.out.println(
+                            "[PathExplorer:exploreMultipleIntegers] No constraints collected - concrete execution");
                 Map<String, Object> inputs = new HashMap<>(currentInputs);
                 exploredPaths.add(new PathRecord(iteration, inputs, new ArrayList<>(), endTime - startTime));
                 // Try incrementing first variable
@@ -362,15 +362,19 @@ public class PathExplorer {
             String constraintSignature = buildConstraintSignature(constraints);
 
             if (DEBUG) {
-                System.out.println("Collected " + constraints.size() + " constraints:");
+                System.out.println(
+                        "[PathExplorer:exploreMultipleIntegers] Collected " + constraints.size() + " constraints:");
                 for (Expression expr : constraints) {
                     System.out.println("  - " + expr.toString());
                 }
-                System.out.println("Execution time: " + (endTime - startTime) + " ms");
+                System.out.println(
+                        "[PathExplorer:exploreMultipleIntegers] Execution time: " + (endTime - startTime) + " ms");
             }
 
             if (exploredConstraintSignatures.contains(constraintSignature)) {
-                if (DEBUG) System.out.println("Path already explored (duplicate constraint signature)");
+                if (DEBUG)
+                    System.out.println(
+                            "[PathExplorer:exploreMultipleIntegers] Path already explored (duplicate constraint signature)");
                 break;
             }
 

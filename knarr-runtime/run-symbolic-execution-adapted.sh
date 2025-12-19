@@ -363,13 +363,13 @@ fi
 
 # Build the project first to ensure everything is compiled
 echo "      Building project..."
-mvn compile -Dcheckstyle.skip=true -q
+mvn compile -U -Dcheckstyle.skip=true -q
 
 # Check if instrumented Java is available
 INSTRUMENTED_JAVA="target/galette/java"
 if [ ! -x "$INSTRUMENTED_JAVA/bin/java" ]; then
     echo "ERROR: Instrumented Java not found. Building it now..."
-    mvn process-test-resources -Dcheckstyle.skip=true -q
+    mvn process-test-resources -U -Dcheckstyle.skip=true -q
 fi
 
 # Resolve Galette agent

@@ -37,9 +37,10 @@ public class AutomaticVitruvPathExploration {
         try {
             Class<?> testClass = Class.forName("tools.vitruv.methodologisttemplate.vsum.Test");
             testInstance = testClass.getDeclaredConstructor().newInstance();
-            System.out.println("Loaded Vitruvius Test class");
+            System.out.println("[AutomaticVitruvPathExploration:main] Loaded Vitruvius Test class");
         } catch (Exception e) {
-            System.err.println(" Failed to load Vitruvius Test class: " + e.getMessage());
+            System.err.println(
+                    "[AutomaticVitruvPathExploration:main] Failed to load Vitruvius Test class: " + e.getMessage());
             return;
         }
 
@@ -116,21 +117,26 @@ public class AutomaticVitruvPathExploration {
             // Get the symbolic expression associated with this tag
             symbolicExpr = GaletteSymbolicator.getExpressionForTag(tag);
 
-            System.out.println("✓ Tag detected: label = \"" + label + "\", variable name = \"" + varName + "\"");
+            System.out.println("[AutomaticVitruvPathExploration:executeVitruvWithInput] ✓ Tag detected: label = \""
+                    + label + "\", variable name = \"" + varName + "\"");
             if (symbolicExpr != null) {
-                System.out.println("  Symbolic expression: " + symbolicExpr);
+                System.out.println("[AutomaticVitruvPathExploration:executeVitruvWithInput]   Symbolic expression: "
+                        + symbolicExpr);
             }
         } else {
             // Fallback mode: use hardcoded variable name
             varName = "user_choice";
-            System.out.println("⚠ No tag found, using fallback variable name: \"" + varName + "\"");
+            System.out.println(
+                    "[AutomaticVitruvPathExploration:executeVitruvWithInput] ⚠ No tag found, using fallback variable name: \""
+                            + varName + "\"");
         }
 
         // Extract concrete value ONLY for display/directory name
         // DO NOT use this for execution - it loses the tag!
         int concreteValue = (input instanceof Integer) ? (Integer) input : 0;
 
-        System.out.println("→ Executing with " + varName + " = " + concreteValue);
+        System.out.println("[AutomaticVitruvPathExploration:executeVitruvWithInput] → Executing with " + varName + " = "
+                + concreteValue);
 
         // Create output directory for this execution
         Path workDir = Paths.get("galette-output-automatic-" + concreteValue);
@@ -144,26 +150,32 @@ public class AutomaticVitruvPathExploration {
 
         try {
             // Execute Vitruvius transformation first
-            System.out.println("  Attempting to invoke insertTask with workDir=" + workDir + ", input=" + input);
+            System.out.println(
+                    "[AutomaticVitruvPathExploration:executeVitruvWithInput]   Attempting to invoke insertTask with workDir="
+                            + workDir + ", input=" + input);
             Method insertTask = testInstance.getClass().getMethod("insertTask", Path.class, Integer.class);
-            System.out.println("  Found method: " + insertTask);
+            System.out.println("[AutomaticVitruvPathExploration:executeVitruvWithInput]   Found method: " + insertTask);
 
             insertTask.invoke(testInstance, workDir, input);
-            System.out.println("  Method invocation succeeded");
+            System.out.println("[AutomaticVitruvPathExploration:executeVitruvWithInput]   Method invocation succeeded");
 
             // IMPROVED: Record switch constraint using variable name from tag (if available)
             PathUtils.addSwitchConstraint(varName, concreteValue);
 
-            System.out.println(" Vitruvius transformation executed");
-            System.out.println("  Constraints: " + PathUtils.getCurPC().size());
+            System.out.println(
+                    "[AutomaticVitruvPathExploration:executeVitruvWithInput] Vitruvius transformation executed");
+            System.out.println("[AutomaticVitruvPathExploration:executeVitruvWithInput]   Constraints: "
+                    + PathUtils.getCurPC().size());
 
         } catch (Exception e) {
-            System.err.println("Execution failed: " + e.getClass().getName() + ": " + e.getMessage());
+            System.err.println("[AutomaticVitruvPathExploration:executeVitruvWithInput] Execution failed: "
+                    + e.getClass().getName() + ": " + e.getMessage());
             if (e.getCause() != null) {
-                System.err.println(" Cause: " + e.getCause().getClass().getName() + ": "
+                System.err.println("[AutomaticVitruvPathExploration:executeVitruvWithInput]  Cause: "
+                        + e.getCause().getClass().getName() + ": "
                         + e.getCause().getMessage());
                 if (e.getCause().getCause() != null) {
-                    System.err.println(" Root Cause: "
+                    System.err.println("[AutomaticVitruvPathExploration:executeVitruvWithInput]  Root Cause: "
                             + e.getCause().getCause().getClass().getName() + ": "
                             + e.getCause().getCause().getMessage());
                 }
@@ -175,7 +187,8 @@ public class AutomaticVitruvPathExploration {
 
         // Return collected constraints
         edu.neu.ccs.prl.galette.concolic.knarr.runtime.PathConditionWrapper pc = PathUtils.getCurPC();
-        System.out.println("  Returning PC with " + pc.size() + " constraints");
+        System.out.println("[AutomaticVitruvPathExploration:executeVitruvWithInput]   Returning PC with " + pc.size()
+                + " constraints");
         return pc;
     }
 
@@ -237,10 +250,12 @@ public class AutomaticVitruvPathExploration {
             writer.println("]");
             writer.close();
 
-            System.out.println("\n📄 Results exported to: " + filename);
+            System.out.println(
+                    "\n[AutomaticVitruvPathExploration:exportResultsToJson] 📄 Results exported to: " + filename);
 
         } catch (Exception e) {
-            System.err.println("Failed to export results: " + e.getMessage());
+            System.err.println(
+                    "[AutomaticVitruvPathExploration:exportResultsToJson] Failed to export results: " + e.getMessage());
         }
     }
 }

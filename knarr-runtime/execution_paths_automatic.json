@@ -10,7 +10,7 @@
       "user_choice==0",
       "user_choice==0"
     ],
-    "executionTime": 675
+    "executionTime": 1016
   },
   {
     "pathId": 2,
@@ -23,7 +23,7 @@
       "user_choice==1",
       "user_choice==1"
     ],
-    "executionTime": 28
+    "executionTime": 38
   },
   {
     "pathId": 3,
@@ -36,7 +36,7 @@
       "user_choice==2",
       "user_choice==2"
     ],
-    "executionTime": 27
+    "executionTime": 34
   },
   {
     "pathId": 4,
@@ -49,7 +49,7 @@
       "user_choice==3",
       "user_choice==3"
     ],
-    "executionTime": 33
+    "executionTime": 28
   },
   {
     "pathId": 5,
@@ -62,6 +62,6 @@
       "user_choice==4",
       "user_choice==4"
     ],
-    "executionTime": 21
+    "executionTime": 22
   }
 ]

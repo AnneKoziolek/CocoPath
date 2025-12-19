@@ -194,8 +194,8 @@ public class SymbolicComparison {
      */
     public static int symbolicSwitch(int value, Tag tag, int... cases) {
         try {
-            System.out.println(
-                    "symbolicSwitch called with value: " + value + ", cases: " + java.util.Arrays.toString(cases));
+            System.out.println("[SymbolicComparison:symbolicSwitch] called with value: " + value + ", cases: "
+                    + java.util.Arrays.toString(cases));
             // If we have a symbolic tag, record the constraint
             if (tag != null && !tag.isEmpty()) {
                 // Get or create symbolic expression for the tag
@@ -265,7 +265,8 @@ public class SymbolicComparison {
      */
     public static int symbolicChoice(int value, Tag tag, int min, int max) {
         try {
-            System.out.println("symbolicChoice called with value: " + value + ", range: [" + min + "," + max + "]");
+            System.out.println("[SymbolicComparison:symbolicChoice] called with value: " + value + ", range: [" + min
+                    + "," + max + "]");
             if (tag != null && !tag.isEmpty()) {
                 // Tagged symbolic value
                 Expression varExpr = GaletteGreenBridge.tagToExpression(tag);
@@ -321,12 +322,12 @@ public class SymbolicComparison {
      * @return The selected value, or -1 if null
      */
     public static int symbolicVitruviusChoice(Integer selected, int min, int max) {
-        System.out.println("[SymbolicComparison] symbolicVitruviusChoice CALLED!");
-        System.out.println("  - Input value: " + selected);
-        System.out.println("  - Range: [" + min + ", " + max + "]");
+        System.out.println("[SymbolicComparison:symbolicVitruviusChoice] CALLED!");
+        System.out.println("[SymbolicComparison:symbolicVitruviusChoice]   - Input value: " + selected);
+        System.out.println("[SymbolicComparison:symbolicVitruviusChoice]   - Range: [" + min + ", " + max + "]");
 
         if (selected == null) {
-            System.out.println("  - Selected is null, returning -1");
+            System.out.println("[SymbolicComparison:symbolicVitruviusChoice]   - Selected is null, returning -1");
             return -1; // Dialog cancelled
         }
 
@@ -336,19 +337,23 @@ public class SymbolicComparison {
             // Try to extract tag using Galette's Tainter
             tag = edu.neu.ccs.prl.galette.internal.runtime.Tainter.getTag(selected);
             if (tag != null && !tag.isEmpty()) {
-                System.out.println("  - Tag found: " + tag);
-                System.out.println("  - Tag labels: " + java.util.Arrays.toString(tag.getLabels()));
+                System.out.println("[SymbolicComparison:symbolicVitruviusChoice]   - Tag found: " + tag);
+                System.out.println("[SymbolicComparison:symbolicVitruviusChoice]   - Tag labels: "
+                        + java.util.Arrays.toString(tag.getLabels()));
             } else {
-                System.out.println("  - No tag or empty tag on Integer value");
+                System.out.println(
+                        "[SymbolicComparison:symbolicVitruviusChoice]   - No tag or empty tag on Integer value");
             }
         } catch (Exception e) {
-            System.out.println("  - Exception getting tag: " + e.getClass().getName() + ": " + e.getMessage());
+            System.out.println("[SymbolicComparison:symbolicVitruviusChoice]   - Exception getting tag: "
+                    + e.getClass().getName() + ": " + e.getMessage());
             // No tag available, will fall back to concrete handling
         }
 
-        System.out.println("  - Delegating to symbolicChoice...");
+        System.out.println("[SymbolicComparison:symbolicVitruviusChoice]   - Delegating to symbolicChoice...");
         int result = symbolicChoice(selected.intValue(), tag, min, max);
-        System.out.println("  - symbolicVitruviusChoice returning: " + result);
+        System.out.println(
+                "[SymbolicComparison:symbolicVitruviusChoice]   - symbolicVitruviusChoice returning: " + result);
         return result;
     }
 }

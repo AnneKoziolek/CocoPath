@@ -1,217 +1,182 @@
 {
-  "total_paths": 30,
-  "num_variables": 2,
-  "variable_names": ["user_choice_1", "user_choice_2"],
+  "total_paths": 25,
+  "num_variables": 0,
+  "variable_names": [],
   "paths": [
     {
       "path_id": 0,
-      "inputs": {"user_choice_1": 0, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 50074
+      "inputs": {},
+      "constraints": ["(0<=CreateAscetTaskRoutine:execute:userChoice_forTask_task1)&&(CreateAscetTaskRoutine:execute:userChoice_forTask_task1<5)", "CreateAscetTaskRoutine:execute:userChoice_forTask_task1==0", "(0<=CreateAscetTaskRoutine:execute:userChoice_forTask_task2)&&(CreateAscetTaskRoutine:execute:userChoice_forTask_task2<5)", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==0"],
+      "num_constraints": 4,
+      "execution_time_ms": 22662
     },
     {
       "path_id": 1,
-      "inputs": {"user_choice_1": 1, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 41
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==0", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==1"],
+      "num_constraints": 2,
+      "execution_time_ms": 203
     },
     {
       "path_id": 2,
-      "inputs": {"user_choice_1": 2, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 45
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==0", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==2"],
+      "num_constraints": 2,
+      "execution_time_ms": 176
     },
     {
       "path_id": 3,
-      "inputs": {"user_choice_1": 3, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 50
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==0", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==3"],
+      "num_constraints": 2,
+      "execution_time_ms": 178
     },
     {
       "path_id": 4,
-      "inputs": {"user_choice_1": 4, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 46
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==0", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==4"],
+      "num_constraints": 2,
+      "execution_time_ms": 111
     },
     {
       "path_id": 5,
-      "inputs": {"user_choice_1": 5, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 39
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==1", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==0"],
+      "num_constraints": 2,
+      "execution_time_ms": 112
     },
     {
       "path_id": 6,
-      "inputs": {"user_choice_1": 6, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 41
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==1", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==1"],
+      "num_constraints": 2,
+      "execution_time_ms": 107
     },
     {
       "path_id": 7,
-      "inputs": {"user_choice_1": 7, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 39
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==1", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==2"],
+      "num_constraints": 2,
+      "execution_time_ms": 171
     },
     {
       "path_id": 8,
-      "inputs": {"user_choice_1": 8, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 37
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==1", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==3"],
+      "num_constraints": 2,
+      "execution_time_ms": 123
     },
     {
       "path_id": 9,
-      "inputs": {"user_choice_1": 9, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 33
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==1", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==4"],
+      "num_constraints": 2,
+      "execution_time_ms": 99
     },
     {
       "path_id": 10,
-      "inputs": {"user_choice_1": 10, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 35
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==2", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==0"],
+      "num_constraints": 2,
+      "execution_time_ms": 130
     },
     {
       "path_id": 11,
-      "inputs": {"user_choice_1": 11, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 39
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==2", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==1"],
+      "num_constraints": 2,
+      "execution_time_ms": 116
     },
     {
       "path_id": 12,
-      "inputs": {"user_choice_1": 12, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 38
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==2", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==2"],
+      "num_constraints": 2,
+      "execution_time_ms": 116
     },
     {
       "path_id": 13,
-      "inputs": {"user_choice_1": 13, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 40
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==2", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==3"],
+      "num_constraints": 2,
+      "execution_time_ms": 182
     },
     {
       "path_id": 14,
-      "inputs": {"user_choice_1": 14, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 74
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==2", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==4"],
+      "num_constraints": 2,
+      "execution_time_ms": 141
     },
     {
       "path_id": 15,
-      "inputs": {"user_choice_1": 15, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 90
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==3", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==0"],
+      "num_constraints": 2,
+      "execution_time_ms": 148
     },
     {
       "path_id": 16,
-      "inputs": {"user_choice_1": 16, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 45
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==3", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==1"],
+      "num_constraints": 2,
+      "execution_time_ms": 93
     },
     {
       "path_id": 17,
-      "inputs": {"user_choice_1": 17, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 46
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==3", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==2"],
+      "num_constraints": 2,
+      "execution_time_ms": 117
     },
     {
       "path_id": 18,
-      "inputs": {"user_choice_1": 18, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 37
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==3", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==3"],
+      "num_constraints": 2,
+      "execution_time_ms": 112
     },
     {
       "path_id": 19,
-      "inputs": {"user_choice_1": 19, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 35
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==3", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==4"],
+      "num_constraints": 2,
+      "execution_time_ms": 79
     },
     {
       "path_id": 20,
-      "inputs": {"user_choice_1": 20, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 33
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==4", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==0"],
+      "num_constraints": 2,
+      "execution_time_ms": 76
     },
     {
       "path_id": 21,
-      "inputs": {"user_choice_1": 21, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 39
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==4", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==1"],
+      "num_constraints": 2,
+      "execution_time_ms": 125
     },
     {
       "path_id": 22,
-      "inputs": {"user_choice_1": 22, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 41
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==4", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==2"],
+      "num_constraints": 2,
+      "execution_time_ms": 79
     },
     {
       "path_id": 23,
-      "inputs": {"user_choice_1": 23, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 35
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==4", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==3"],
+      "num_constraints": 2,
+      "execution_time_ms": 187
     },
     {
       "path_id": 24,
-      "inputs": {"user_choice_1": 24, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 47
-    },
-    {
-      "path_id": 25,
-      "inputs": {"user_choice_1": 25, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 37
-    },
-    {
-      "path_id": 26,
-      "inputs": {"user_choice_1": 26, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 44
-    },
-    {
-      "path_id": 27,
-      "inputs": {"user_choice_1": 27, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 38
-    },
-    {
-      "path_id": 28,
-      "inputs": {"user_choice_1": 28, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 37
-    },
-    {
-      "path_id": 29,
-      "inputs": {"user_choice_1": 29, "user_choice_2": 0},
-      "constraints": [],
-      "num_constraints": 0,
-      "execution_time_ms": 32
+      "inputs": {},
+      "constraints": ["CreateAscetTaskRoutine:execute:userChoice_forTask_task1==4", "CreateAscetTaskRoutine:execute:userChoice_forTask_task2==4"],
+      "num_constraints": 2,
+      "execution_time_ms": 69
     }
   ]
 }

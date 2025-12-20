@@ -394,7 +394,7 @@ set +e
     -Xbootclasspath/a:"$GALETTE_AGENT" \
     -javaagent:"$GALETTE_AGENT" \
     -Dgalette.cache=target/galette/cache \
-    -Dpath.explorer.max.iterations=6 \
+    -Dpath.explorer.max.iterations=30 \
     "$MAIN_CLASS"
 MVN_EXIT=$?
 set -e

@@ -518,116 +518,173 @@ public class PathExplorer {
             switchConstraints.addAll(currentConstraints);
         } else {
             if (DEBUG) {
-                System.out.println("Unexpected number of constraints: " + currentConstraints.size() + " for " + numVars
-                        + " variables");
+                System.out.println("[PathExplorer:generateNextMultiVarInput] Unexpected number of constraints: "
+                        + currentConstraints.size() + " for " + numVars + " variables");
             }
             // Try to handle it anyway - assume they're all switch constraints
             switchConstraints.addAll(currentConstraints);
         }
 
         if (switchConstraints.isEmpty()) {
-            if (DEBUG) System.out.println("No switch constraints to negate");
+            if (DEBUG) System.out.println("[PathExplorer:generateNextMultiVarInput] No switch constraints to negate");
             return null;
         }
-
-        // Multi-variable enumeration strategy:
-        // For proper exploration of all combinations, we need to handle each variable separately
-        // We maintain separate negation lists per variable in negationsPerVariable
-        // (negationsPerVariable is already initialized in exploreMultipleIntegers)
-
-        // Determine which variable to increment next (like an odometer)
-        // Start with the rightmost variable and work backwards
-        Expression switchToNegate = null;
 
         // Extract domain size from domain constraint to avoid hard-coding
         // Domain constraint looks like: (0<=var)&&(var<5) which means domain is [0,4]
-        int maxDomainSize = 5; // Default, will be updated from domain constraint
+        int maxDomainSize = 5; // Default
         if (domainConstraint != null) {
             String domainStr = domainConstraint.toString();
-            // Try to extract the upper bound from patterns like "var<5" or "var<=4"
-            if (domainStr.contains("<")) {
-                String[] parts = domainStr.split("<");
-                for (String part : parts) {
-                    try {
-                        int val = Integer.parseInt(part.replaceAll("[^0-9]", ""));
-                        if (val > 0 && val < 100) { // Sanity check
-                            maxDomainSize = val;
-                            break;
+            if (DEBUG) {
+                System.out.println("[PathExplorer:generateNextMultiVarInput] Domain constraint string: " + domainStr);
+            }
+
+            // Look for pattern "variable<NUMBER)" where NUMBER is immediately after <
+            // E.g., "CreateAscetTaskRoutine:execute:userChoice_forTask_task1<5"
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("<(\\d+)\\)");
+            java.util.regex.Matcher matcher = pattern.matcher(domainStr);
+            if (matcher.find()) {
+                try {
+                    int upperBound = Integer.parseInt(matcher.group(1));
+                    if (upperBound > 0 && upperBound <= 100) {
+                        maxDomainSize = upperBound;
+                        if (DEBUG) {
+                            System.out.println("[PathExplorer:generateNextMultiVarInput] Extracted upper bound: "
+                                    + upperBound + " from pattern <" + upperBound + ")");
                         }
-                    } catch (NumberFormatException e) {
-                        // Ignore and continue
                     }
+                } catch (NumberFormatException e) {
+                    // Keep default
                 }
             }
         }
 
         if (DEBUG) {
-            System.out.println("Using domain size: " + maxDomainSize);
+            System.out.println("[PathExplorer:generateNextMultiVarInput] Using domain size: " + maxDomainSize);
         }
 
-        // Try to find the next value for the rightmost variable first
-        for (int i = numVars - 1; i >= 0; i--) {
-            if (i >= switchConstraints.size()) {
-                continue; // Skip if we don't have a constraint for this variable
-            }
+        // Multi-variable exploration: properly handle backtracking
+        // Strategy: For 2 variables with domain [0,4], we want:
+        // (0,0), (0,1), (0,2), (0,3), (0,4), then
+        // (1,0), (1,1), (1,2), (1,3), (1,4), then
+        // (2,0), etc. up to (4,4) = 25 total combinations
 
-            Expression currentSwitch = switchConstraints.get(i);
-            List<Expression> varNegations = negationsPerVariable.get(i);
-
-            // Check if we can still explore more values for this variable
-            // We can have at most (domainSize - 1) negations before exhaustion
-            if (varNegations.size() < maxDomainSize - 1) {
-                switchToNegate = currentSwitch;
-
-                // Negate this switch and add to this variable's negation list
-                Expression negated = ConstraintSolver.negateConstraint(switchToNegate);
-                varNegations.add(negated);
-
-                if (DEBUG) {
-                    System.out.println("Variable " + i + ": negating " + switchToNegate + " -> " + negated);
-                    System.out.println("Variable " + i + " now has " + varNegations.size() + " negations");
+        // Count how many negations we have for each variable
+        int[] negationsPerVar = new int[numVars];
+        for (Expression neg : negatedSwitchConstraints) {
+            String negStr = neg.toString();
+            // Check which variable this negation is for
+            for (int i = 0; i < numVars && i < switchConstraints.size(); i++) {
+                String varName = switchConstraints.get(i).toString().split("==")[0];
+                if (negStr.contains(varName)) {
+                    negationsPerVar[i]++;
+                    break;
                 }
-
-                // If this is not the rightmost variable, clear negations for all variables to the right
-                // (reset them to start from 0 again)
-                for (int j = i + 1; j < numVars; j++) {
-                    negationsPerVariable.get(j).clear();
-                    if (DEBUG) System.out.println("Clearing negations for variable " + j);
-                }
-
-                break;
             }
         }
 
-        if (switchToNegate == null) {
-            // All variables exhausted
-            if (DEBUG) System.out.println("All variables exhausted - no more combinations");
+        if (DEBUG) {
+            System.out.println("[PathExplorer:generateNextMultiVarInput] Negations per variable: "
+                    + Arrays.toString(negationsPerVar));
+        }
+
+        // Find which variable to negate next
+        boolean foundVariableToNegate = false;
+
+        // Check if we can increment the rightmost variable
+        int lastVarIdx = numVars - 1;
+        if (lastVarIdx < switchConstraints.size() && negationsPerVar[lastVarIdx] < maxDomainSize - 1) {
+            // Can still negate the last variable
+            Expression lastSwitch = switchConstraints.get(lastVarIdx);
+            Expression negatedSwitch = ConstraintSolver.negateConstraint(lastSwitch);
+            negatedSwitchConstraints.add(negatedSwitch);
+            foundVariableToNegate = true;
+
+            if (DEBUG) {
+                System.out.println("[PathExplorer:generateNextMultiVarInput] Negating last variable: " + lastSwitch
+                        + " -> " + negatedSwitch);
+            }
+        } else if (lastVarIdx >= 0 && negationsPerVar[lastVarIdx] >= maxDomainSize - 1) {
+            // Last variable is exhausted, need to backtrack
+            if (DEBUG)
+                System.out.println("[PathExplorer:generateNextMultiVarInput] Last variable exhausted, backtracking...");
+
+            // Find the first variable from the right that can be incremented
+            for (int i = lastVarIdx - 1; i >= 0; i--) {
+                if (i < switchConstraints.size() && negationsPerVar[i] < maxDomainSize - 1) {
+                    // Found a variable that can be incremented
+
+                    // First, clear all negations for variables to the right of this one
+                    List<Expression> toRemove = new ArrayList<>();
+                    for (Expression neg : negatedSwitchConstraints) {
+                        String negStr = neg.toString();
+                        // Check if this negation is for a variable after i
+                        for (int j = i + 1; j < numVars && j < switchConstraints.size(); j++) {
+                            String varName = switchConstraints.get(j).toString().split("==")[0];
+                            if (negStr.contains(varName)) {
+                                toRemove.add(neg);
+                                break;
+                            }
+                        }
+                    }
+                    negatedSwitchConstraints.removeAll(toRemove);
+
+                    if (DEBUG && !toRemove.isEmpty()) {
+                        System.out.println("[PathExplorer:generateNextMultiVarInput] Cleared " + toRemove.size()
+                                + " negations for variables after " + i);
+                    }
+
+                    // Now negate variable i
+                    Expression switchToNegate = switchConstraints.get(i);
+                    Expression negatedSwitch = ConstraintSolver.negateConstraint(switchToNegate);
+                    negatedSwitchConstraints.add(negatedSwitch);
+                    foundVariableToNegate = true;
+
+                    if (DEBUG) {
+                        System.out.println("[PathExplorer:generateNextMultiVarInput] Negating variable " + i + ": "
+                                + switchToNegate + " -> " + negatedSwitch);
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (!foundVariableToNegate) {
+            if (DEBUG)
+                System.out.println(
+                        "[PathExplorer:generateNextMultiVarInput] All variables exhausted - exploration complete");
             return null;
         }
 
-        // Build combined constraint: domain AND all negations for all variables
+        if (DEBUG) {
+            System.out.println("[PathExplorer:generateNextMultiVarInput] Total negated constraints: "
+                    + negatedSwitchConstraints.size());
+        }
+
+        // Build combined constraint: domain AND all negated switches
         Expression combinedConstraint = domainConstraint;
 
-        // Add all negations from all variables
-        for (int i = 0; i < numVars; i++) {
-            for (Expression negated : negationsPerVariable.get(i)) {
-                if (combinedConstraint == null) {
-                    combinedConstraint = negated;
-                } else {
-                    combinedConstraint = new BinaryOperation(Operator.AND, combinedConstraint, negated);
-                }
+        // Add all negated switch constraints
+        for (Expression negated : negatedSwitchConstraints) {
+            if (combinedConstraint == null) {
+                combinedConstraint = negated;
+            } else {
+                combinedConstraint = new BinaryOperation(Operator.AND, combinedConstraint, negated);
             }
         }
 
         if (DEBUG) {
-            System.out.println("Combined constraint for solver: " + combinedConstraint);
+            System.out.println(
+                    "[PathExplorer:generateNextMultiVarInput] Combined constraint for solver: " + combinedConstraint);
         }
 
         // Solve the combined constraint
         InputSolution solution = ConstraintSolver.solveConstraint(combinedConstraint);
 
         if (solution == null || !solution.isSatisfiable()) {
-            if (DEBUG) System.out.println("UNSAT - no more inputs satisfy the constraints");
+            if (DEBUG)
+                System.out.println(
+                        "[PathExplorer:generateNextMultiVarInput] UNSAT - no more inputs satisfy the constraints");
             return null;
         }
 
@@ -639,7 +696,8 @@ public class PathExplorer {
             Object value = solution.getValue(key);
             if (value != null) {
                 if (DEBUG) {
-                    System.out.println("Found value in solution: " + key + " = " + value);
+                    System.out.println(
+                            "[PathExplorer:generateNextMultiVarInput] Found value in solution: " + key + " = " + value);
                 }
 
                 if (value instanceof Integer) {

@@ -327,20 +327,39 @@ public class PathExplorer {
             PathConditionWrapper pc = executor.execute(inputsForExecution);
             long endTime = System.currentTimeMillis();
 
-            // Extract variable names from tags after execution
+            // Extract variable names from constraints after execution
             List<String> variableNames = new ArrayList<>();
             Map<String, Integer> currentInputs = new HashMap<>();
-            for (int i = 0; i < currentInputsList.size(); i++) {
-                Integer value = currentInputsList.get(i);
-                String varName = extractTagFromValue(value);
-                if (varName != null) {
-                    variableNames.add(varName);
-                    currentInputs.put(varName, value);
+
+            // If we have constraints, extract variable names from them
+            if (pc != null && !pc.isEmpty()) {
+                List<Expression> tempConstraints = pc.getConstraints();
+                // Look for switch constraints (equality constraints) to extract variable names
+                Set<String> uniqueVarNames = new LinkedHashSet<>();
+                for (Expression constraint : tempConstraints) {
+                    String constraintStr = constraint.toString();
+                    if (constraintStr.contains("==")) {
+                        String varName = constraintStr.split("==")[0];
+                        uniqueVarNames.add(varName);
+                    }
+                }
+                variableNames.addAll(uniqueVarNames);
+            }
+
+            // If we still don't have variable names, use generic names
+            if (variableNames.isEmpty()) {
+                for (int i = 0; i < currentInputsList.size(); i++) {
+                    variableNames.add("input_" + i);
                 }
             }
 
+            // Map the values to variable names
+            for (int i = 0; i < Math.min(currentInputsList.size(), variableNames.size()); i++) {
+                currentInputs.put(variableNames.get(i), currentInputsList.get(i));
+            }
+
             if (DEBUG) {
-                System.out.println("[PathExplorer:exploreMultipleIntegers] Extracted variable names from tags:");
+                System.out.println("[PathExplorer:exploreMultipleIntegers] Extracted variable names from constraints:");
                 for (String varName : variableNames) {
                     System.out.println("  " + varName + " = " + currentInputs.get(varName));
                 }
